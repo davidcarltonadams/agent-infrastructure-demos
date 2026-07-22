@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>atlas</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151210'/%3E%3Crect x='12' y='16' width='40' height='8' rx='4' fill='%23d4a24e'/%3E%3Crect x='12' y='29' width='26' height='8' rx='4' fill='%23d4a24e' opacity='.65'/%3E%3Crect x='12' y='42' width='33' height='8' rx='4' fill='%23d4a24e' opacity='.4'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#14110e;--panel:#1d1915;--panel2:#241f19;--line:#332c23;
+--txt:#e8e0d0;--dim:#9a8f7d;--gold:#d4a24e;--red:#d06a55;--amber:#d9a441}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);
+font:15px/1.45 -apple-system,'Helvetica Neue',sans-serif;padding:14px 12px 60px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font:700 21px Georgia,serif;color:var(--gold);margin:4px 0 2px}
+.stamp{color:var(--dim);font-size:12px;margin-bottom:14px}
+.meter{color:var(--dim);font-size:13px;margin:0 0 16px}
+.meter b{color:var(--txt)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+gap:10px;margin-bottom:26px}
+.card{display:block;background:var(--panel);border:1px solid var(--line);
+border-left:4px solid var(--ac);border-radius:10px;padding:10px 12px;
+text-decoration:none;color:var(--txt)}
+.card .al{font-weight:700;color:var(--ac)}
+.card .am{color:var(--dim);font-size:11.5px;margin:2px 0 6px}
+.card .as{font-size:12.5px;color:var(--dim)}
+.card .as b{color:var(--txt)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+background:var(--red);margin-left:6px;vertical-align:1px}
+h2{font:700 16px Georgia,serif;color:var(--ac);border-bottom:1px solid var(--line);
+padding-bottom:4px;margin:26px 0 10px}
+h2 .am{font-weight:400;font-size:12px;color:var(--dim);font-family:-apple-system,sans-serif}
+.prj{background:var(--panel);border:1px solid var(--line);border-radius:10px;
+padding:10px 12px;margin-bottom:10px}
+.ph{display:flex;flex-wrap:wrap;gap:6px;align-items:baseline}
+.pt{font-weight:650}
+.badge{font-size:10.5px;padding:1px 7px;border-radius:9px;border:1px solid var(--line);
+color:var(--dim);text-transform:uppercase;letter-spacing:.4px}
+.b-active{color:#9fc07f;border-color:#3d4a30}.b-blocked{color:var(--red);border-color:#5a3028}
+.b-planned{color:#8fa8c8;border-color:#33455c}.b-idea{color:var(--dim)}
+.due{font-size:11.5px;color:var(--dim)}.due.over{color:var(--red);font-weight:700}
+.due.soon{color:var(--amber);font-weight:600}
+/* v2.2 item list (replaces the one-line gantt segments). One row per item:
+   check = ☐/✓ glyph; bar = progress bar, total width ∝ quasi-log(est_h). */
+.items{margin:8px 0 2px}
+.item{display:flex;align-items:center;gap:7px;padding:2.5px 0;font-size:12px;
+color:var(--txt);min-height:18px}
+.item .ck{width:16px;text-align:center;color:var(--dim);flex:none;font-size:13px}
+.item.idn .ck{color:#9fc07f}
+.item .ibar{display:inline-block;height:9px;border-radius:4px;flex:none;
+background:rgba(255,255,255,.07);overflow:hidden}
+.item .ibar .ifill{display:block;height:100%;width:var(--p);background:var(--ac);
+border-radius:4px;opacity:.9}
+.item.dep .ibar{outline:1.5px dashed var(--red);outline-offset:1px}
+.item.dep .ibar .ifill{opacity:.45}
+.item .il{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.item.idn .il{color:var(--dim)}
+.item.idn.check .il{text-decoration:line-through;text-decoration-color:rgba(159,192,127,.5)}
+.ich{font-size:10px;color:var(--dim);border:1px solid var(--line);border-radius:8px;
+padding:0 5px;flex:none}
+.ich.estq{color:var(--amber);border-color:#5a4a28}
+details.idone{margin:3px 0 0}
+details.idone summary{color:var(--dim);font-size:11px;cursor:pointer;list-style:none}
+details.idone summary::-webkit-details-marker{display:none}
+details.idone .item{opacity:.65}
+.chips{margin-top:5px}
+.chip{display:inline-block;font-size:10.5px;color:var(--red);border:1px solid #5a3028;
+border-radius:8px;padding:0 6px;margin:2px 4px 0 0}
+.chip.est{color:var(--dim);border-color:var(--line)}
+.next{font-size:12.5px;margin-top:7px}.next b{color:var(--gold)}
+.act{font-size:12px;margin-top:6px;overflow:hidden;text-overflow:ellipsis;
+white-space:nowrap}.act .hdot{font-size:10px}.act em{opacity:.75}
+.last{font-size:11px;color:var(--dim);margin-top:3px}
+/* tap-to-expand detail (2026-07-13, David): default view = heading row +
+   gantt bars w/ labels only; tapping anywhere on the card header toggles the
+   detail block (deps/est chips, next, last). Checkbox hack — no JS, and
+   deliberately NOT a <details> triangle (that stays unique to the done
+   folder). The dim ellipsis is the only affordance; it hides when open. */
+.tgl{display:none}
+label.hd{display:block;cursor:pointer;-webkit-tap-highlight-color:transparent;
+-webkit-user-select:none;user-select:none}
+/* v2.4: the expand cue is now its own row BELOW the item list (was orphaned
+   above it inside the header). It toggles the same checkbox and hides when open. */
+.more{display:block;color:var(--dim);font-size:12px;margin-top:6px;letter-spacing:2px;
+text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;
+-webkit-user-select:none;user-select:none}
+.detail{display:none;margin-top:2px}
+.tgl:checked~.detail{display:block}
+.tgl:checked~.more{display:none}
+/* v2.4: gate note under an item row (gating/caution context, ex-prose-next) */
+.igate{font-size:10.5px;color:var(--amber);margin:0 0 3px 23px;line-height:1.3;
+opacity:.85}
+/* v2.4: read-only history reveal (last ~8 log entries) — replaces the last: line */
+details.hist{margin:6px 0 0}
+details.hist>summary{color:var(--dim);font-size:11px;cursor:pointer;list-style:none;
+letter-spacing:.3px}
+details.hist>summary::-webkit-details-marker{display:none}
+details.hist>summary::after{content:" ▾";font-size:10px}
+details.hist[open]>summary::after{content:" ▴"}
+.hrow{font-size:11px;color:var(--dim);margin:3px 0;line-height:1.35}
+.hrow .hdate{color:var(--txt);opacity:.7}
+details.done{margin:4px 0 0}details.done summary{color:var(--dim);font-size:12.5px;cursor:pointer}
+code{background:var(--panel2);padding:0 4px;border-radius:4px;font-size:11.5px;color:var(--dim)}
+a{color:var(--gold)}
+.top{position:fixed;right:14px;bottom:14px;background:var(--panel);border:1px solid var(--line);
+border-radius:50%;width:38px;height:38px;text-align:center;line-height:36px;text-decoration:none}
+/* v2 write-back (atlas.js). All inert without JS: editcue is added by JS only,
+   .atlas-edit only appears once a card is armed. */
+.prj{position:relative}
+.wsrc{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);
+border:1px solid var(--line);border-radius:6px;padding:0 4px;margin-left:5px}
+.atlas-editcue{position:absolute;top:7px;right:8px;background:transparent;border:none;
+color:var(--dim);font-size:14px;cursor:pointer;opacity:.5;padding:2px 5px;line-height:1}
+.atlas-editcue:hover,.atlas-editcue:focus{opacity:1;color:var(--gold)}
+.editing{outline:2px solid var(--gold);outline-offset:2px}
+.editing .atlas-editcue{display:none}
+.atlas-edit{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);
+display:flex;flex-wrap:wrap;gap:8px}
+.atlas-edit .aef{display:flex;flex-direction:column;font-size:11px;color:var(--dim);gap:3px}
+.atlas-edit .aef.anote{flex:1 1 100%}
+.atlas-edit select,.atlas-edit input,.atlas-edit textarea{font:14px -apple-system,sans-serif;
+background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+.atlas-edit input[type=number]{width:66px}
+.atlas-edit textarea{width:100%;box-sizing:border-box;resize:vertical}
+.atlas-edit .aebar{flex:1 1 100%;display:flex;gap:8px;align-items:center;margin-top:2px}
+.atlas-edit .aeb{font:14px -apple-system,sans-serif;font-weight:600;padding:7px 14px;
+border:none;border-radius:6px;cursor:pointer}
+.atlas-edit .aesave{background:var(--gold);color:var(--bg)}
+.atlas-edit .aecancel{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+.atlas-edit .aeerr{color:var(--red);font-size:12px}
+/* v2.1: mark-done control (inline confirm before it fires the stage op) */
+.atlas-edit .aedone{background:#3d4a30;color:#9fc07f;border:1px solid #4a5a3a}
+.atlas-edit .aedone.confirm{background:var(--amber);color:var(--bg)}
+/* v2.2: per-item edit rows (▲▼ · id · kind · tick/pct · est) */
+.aeitems{flex:1 1 100%;display:flex;flex-direction:column;gap:5px;
+border-top:1px dotted var(--line);padding-top:8px}
+.aeitem{display:flex;align-items:center;gap:6px;font-size:12px}
+.aeitem .aemv{background:var(--panel2);color:var(--dim);border:1px solid var(--line);
+border-radius:5px;font-size:10px;padding:3px 6px;cursor:pointer;line-height:1}
+.aeitem .aemv:active{color:var(--gold)}
+.aeitem .aeil{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+white-space:nowrap;color:var(--txt)}
+.aeitem select{font-size:12px;padding:3px 4px}
+.aeitem .aepct{width:56px;font-size:13px;padding:4px 6px}
+.aeitem .aeest{width:56px;font-size:13px;padding:4px 6px}
+.aeitem .aegate{flex:1;min-width:70px;font-size:12px;padding:4px 6px}
+.aeitem input[type=checkbox]{width:17px;height:17px;accent-color:#9fc07f}
+.aeitem .aesure{color:var(--amber);font-size:11px;font-weight:600}
+/* v2.3: project ▲▼ move (in the edit bar) + "+ add item" row */
+.atlas-edit .aeprj{display:inline-flex;gap:5px;margin-left:4px}
+.aeadd{flex:1 1 100%;display:flex;gap:6px;align-items:center;
+border-top:1px dotted var(--line);padding-top:8px}
+.aeadd .aeaddl{flex:1;min-width:0;font-size:13px;padding:5px 8px}
+.aeadd select{font-size:12px;padding:4px}
+.aeadd .aeest{width:56px;font-size:13px;padding:4px 6px}
+/* v2.1: meter split ext/int due lines */
+.meter div{margin-top:2px}
+/* v2.1: data-derived subgroup headers within an area */
+.grp{font-size:10.5px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;
+margin:12px 0 6px;border-bottom:1px dotted var(--line);padding-bottom:2px}
+/* v2.1: collapsible area sections — native details, no folder icon (that stays
+   unique to the done folder). Closed = just the h2 line + a dim chevron. */
+details.asec>summary{list-style:none;cursor:pointer;
+-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+details.asec>summary::-webkit-details-marker,details.asec>summary::marker{display:none}
+details.asec>summary h2{display:block}
+details.asec:not([open])>summary h2::after{content:" ▸";color:var(--dim);
+font-size:12px;font-family:-apple-system,sans-serif}
+</style></head>
+<body><div class="wrap">
+<h1>atlas</h1>
+<div class="stamp">rendered 2026-07-20 14:28 · <a href="index.html">dca-dB →</a> · <a href="gazette.html">gazette →</a></div>
+<div class="meter"><div><b>4</b> active · <b style="color:var(--red)">1 blocked</b> · 3 pipeline (no due)</div><div>ext — next due: <b>tessellate-prize</b> 2026-07-28</div></div>
+<div class="cards"><a class="card" style="--ac:#e07a3f" href="#income"><div class="al">Income &amp; Roles</div><div class="am">earn — teaching, consulting, applied AI</div><div class="as"><b>2</b> live · next 2026-07-28</div></a><a class="card" style="--ac:#6fae8f" href="#org"><div class="al">Halcyon Collective<span class=dot></span></div><div class="am">commission + present new work</div><div class="as"><b>2</b> live · next 2026-10-01</div></a><a class="card" style="--ac:#7c9fd4" href="#systems"><div class="al">Systems</div><div class="am">the tools that run the studio</div><div class="as"><b>1</b> live</div></a></div>
+<details class="asec" id="income" data-area="income" open style="--ac:#e07a3f"><summary><h2>Income &amp; Roles <span class="am">earn — teaching, consulting, applied AI</span></h2></summary><div class="grp">external deadlines</div><div class="prj" data-id="tessellate-prize" data-stage="active" data-heat="auto"><input type="checkbox" id="tgl-tessellate-prize" class="tgl"><label for="tgl-tessellate-prize" class="hd"><div class="ph"><span class="pt">Tessellate Prize submission</span> <span class="badge b-active">active</span> <span class="due ">due 2026-07-28</span> <code>tessellate-prize</code></div><div class="act" style="color:#d9a441"><span class="hdot">●</span> dca: Score finished</div></label><div class="items"><div class="item" data-ms="score" data-kind="bar" data-pct="80"><span class="ibar" style="width:51%"><span class="ifill" style="--p:80%"></span></span><span class="il">Score finished 80%</span><span class="ich estq">est?</span></div><div class="item" data-ms="note" data-kind="bar" data-pct="20"><span class="ibar" style="width:51%"><span class="ifill" style="--p:20%"></span></span><span class="il">Program note drafted 20%</span><span class="ich estq">est?</span></div></div><label for="tgl-tessellate-prize" class="more">···</label><div class="detail"><details class="hist"><summary>history</summary><div class="hrow"><span class="hdate">2026-07-20</span> score 60→80% — final movement voiced <span class="wsrc">cli</span></div></details></div></div><div class="grp">pipeline</div><div class="prj" data-id="applied-ai-pilot" data-stage="active" data-heat="auto"><input type="checkbox" id="tgl-applied-ai-pilot" class="tgl"><label for="tgl-applied-ai-pilot" class="hd"><div class="ph"><span class="pt">Applied-AI advisory pilot</span> <span class="badge b-active">active</span> <code>applied-ai-pilot</code></div><div class="act" style="color:#d9a441"><span class="hdot">●</span> dca: Scope a free documented engagement</div></label><div class="items"><div class="item" data-ms="scope" data-kind="bar" data-pct="60"><span class="ibar" style="width:51%"><span class="ifill" style="--p:60%"></span></span><span class="il">Scope a free documented engagement 60%</span><span class="ich estq">est?</span></div><div class="item dep" data-ms="deliver" data-kind="bar" data-pct="0"><span class="ibar" style="width:51%"><span class="ifill" style="--p:0%"></span></span><span class="il">Deliver + write it up 0%</span><span class="ich estq">est?</span></div></div><label for="tgl-applied-ai-pilot" class="more">···</label><div class="detail"><details class="hist"><summary>history</summary><div class="hrow"><span class="hdate">2026-07-17</span> drafted a pilot offer for one friendly team <span class="wsrc">cli</span></div></details></div></div></details><details class="asec" id="org" data-area="org" open style="--ac:#6fae8f"><summary><h2>Halcyon Collective <span class="am">commission + present new work</span></h2></summary><div class="grp">external deadlines</div><div class="prj" data-id="spring-program" data-stage="active" data-heat="auto"><input type="checkbox" id="tgl-spring-program" class="tgl"><label for="tgl-spring-program" class="hd"><div class="ph"><span class="pt">Spring Program (5 works)</span> <span class="badge b-active">active</span> <span class="due ">due 2026-10-01</span> <code>spring-program</code></div><div class="act" style="color:#d9a441"><span class="hdot">●</span> dca: Two commissions signed</div></label><div class="items"><div class="item" data-ms="commissions" data-kind="bar" data-pct="40" data-gate="waiting on one composer&#x27;s countersignature"><span class="ibar" style="width:51%"><span class="ifill" style="--p:40%"></span></span><span class="il">Two commissions signed 40%</span><span class="ich estq">est?</span></div><div class="igate">⚠ waiting on one composer's countersignature</div><div class="item dep" data-ms="rehearsals" data-kind="bar" data-pct="0"><span class="ibar" style="width:51%"><span class="ifill" style="--p:0%"></span></span><span class="il">Rehearsals scheduled 0%</span><span class="ich estq">est?</span></div><details class="idone"><summary>✓ done (1)</summary><div class="item idn" data-ms="rep" data-kind="bar" data-pct="100"><span class="ibar" style="width:51%"><span class="ifill" style="--p:100%"></span></span><span class="il">Repertoire locked 100%</span></div></details></div><label for="tgl-spring-program" class="more">···</label><div class="detail"><details class="hist"><summary>history</summary><div class="hrow"><span class="hdate">2026-07-14</span> repertoire locked to five works <span class="wsrc">cli</span></div><div class="hrow"><span class="hdate">2026-07-19</span> commissions 20→40% — first contract back <span class="wsrc">cli</span></div></details></div></div><div class="grp">pipeline</div><div class="prj" data-id="corvid-collab" data-stage="blocked" data-heat="auto"><input type="checkbox" id="tgl-corvid-collab" class="tgl"><label for="tgl-corvid-collab" class="hd"><div class="ph"><span class="pt">Corvid Ensemble co-presentation</span> <span class="badge b-blocked">blocked</span> <code>corvid-collab</code></div><div class="act" style="color:#9a8f7d"><span class="hdot">●</span> dca: Confirm mutual interest</div></label><div class="items"><div class="item" data-ms="interest" data-kind="bar" data-pct="30" data-gate="verify the ensemble is actually in before planning"><span class="ibar" style="width:51%"><span class="ifill" style="--p:30%"></span></span><span class="il">Confirm mutual interest 30%</span><span class="ich estq">est?</span></div><div class="igate">⚠ verify the ensemble is actually in before planning</div><div class="item dep" data-ms="season" data-kind="bar" data-pct="0"><span class="ibar" style="width:51%"><span class="ifill" style="--p:0%"></span></span><span class="il">Slot in next season 0%</span><span class="ich estq">est?</span></div></div><label for="tgl-corvid-collab" class="more">···</label><div class="detail"><details class="hist"><summary>history</summary><div class="hrow"><span class="hdate">2026-07-18</span> surfaced — promising but unconfirmed <span class="wsrc">cli</span></div></details></div></div></details><details class="asec" id="systems" data-area="systems" open style="--ac:#7c9fd4"><summary><h2>Systems <span class="am">the tools that run the studio</span></h2></summary><div class="grp">pipeline</div><div class="prj" data-id="tuning-tool" data-stage="active" data-heat="auto"><input type="checkbox" id="tgl-tuning-tool" class="tgl"><label for="tgl-tuning-tool" class="hd"><div class="ph"><span class="pt">Microtonal lattice tool</span> <span class="badge b-active">active</span> <code>tuning-tool</code></div><div class="act" style="color:#d9a441"><span class="hdot">●</span> dca: Web player UI</div></label><div class="items"><div class="item" data-ms="ui" data-kind="bar" data-pct="55"><span class="ibar" style="width:51%"><span class="ifill" style="--p:55%"></span></span><span class="il">Web player UI 55%</span><span class="ich estq">est?</span></div><details class="idone"><summary>✓ done (1)</summary><div class="item idn" data-ms="engine" data-kind="bar" data-pct="100"><span class="ibar" style="width:51%"><span class="ifill" style="--p:100%"></span></span><span class="il">JI ratio engine 100%</span></div></details></div><label for="tgl-tuning-tool" class="more">···</label><div class="detail"><details class="hist"><summary>history</summary><div class="hrow"><span class="hdate">2026-07-16</span> ui 30→55% — lattice renders, audio wired <span class="wsrc">cli</span></div></details></div></div></details>
+<a class="top" href="#">▲</a>
+</div><script>/* atlas.js — Atlas v2 write-back edit client (progressive enhancement).
+ *
+ * Loaded only by atlas_server.py (script-src 'self'). With JS off, the page is
+ * exactly today's read-only surface — nothing here runs, no pencils, no network.
+ *
+ * Edit gesture: triple-tap / triple-click a project card (or its ✎ cue) arms
+ * edit mode on that ONE card and auto-expands it. A native form appears with
+ * Save / Cancel. On Save we POST each changed field to /atlas/write; on total
+ * success we reload (the deterministic renderer is the source of truth). On ANY
+ * failure we KEEP the form and the typed text (never lose a long note) and show
+ * an inline error. Same-origin cookie rides automatically.
+ */
+(function () {
+  "use strict";
+  var STAGES = ["idea", "planned", "active", "blocked", "done", "dropped"];
+  var HEATS = ["hot", "warm", "decision", "rolling", "waiting", "chill", "auto"];
+  var TRIPLE_MS = 600;
+  var taps = new WeakMap();
+
+  function h(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "class") e.className = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) {
+      e.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    });
+    return e;
+  }
+
+  function selectOf(opts, current) {
+    var s = h("select");
+    opts.forEach(function (o) {
+      var opt = h("option", { value: o }, [o]);
+      if (o === current) opt.selected = true;
+      s.appendChild(opt);
+    });
+    return s;
+  }
+
+  function arm(card) {
+    if (card.classList.contains("editing")) return;
+    card.classList.add("editing");
+    var tgl = card.querySelector("input.tgl");
+    if (tgl) tgl.checked = true; // auto-expand detail
+    buildPanel(card);
+  }
+
+  function disarm(card, panel) {
+    card.classList.remove("editing");
+    if (panel && panel.parentNode) panel.parentNode.removeChild(panel);
+  }
+
+  // v2.3: optimistically swap a project card with its adjacent .prj sibling in
+  // the same bucket. A .grp header or the done <details> stops the move at a
+  // bucket edge (returns false → no op queued). The reload after Save shows the
+  // true server-computed order regardless, so this is feedback-only.
+  function moveCard(card, delta) {
+    var sib = delta < 0 ? card.previousElementSibling : card.nextElementSibling;
+    if (!sib || !sib.classList || !sib.classList.contains("prj") ||
+        !sib.hasAttribute("data-id")) return false;
+    if (delta < 0) card.parentNode.insertBefore(card, sib);
+    else card.parentNode.insertBefore(sib, card);
+    return true;
+  }
+
+  function buildPanel(card) {
+    var id = card.getAttribute("data-id");
+    var panel = h("div", { class: "atlas-edit" });
+
+    var stageSel = selectOf(STAGES, card.getAttribute("data-stage"));
+    var heatSel = selectOf(HEATS, card.getAttribute("data-heat") || "auto");
+    panel.appendChild(h("label", { class: "aef" }, ["stage ", stageSel]));
+    panel.appendChild(h("label", { class: "aef" }, ["heat ", heatSel]));
+
+    // v2.3: reorder this project within its area+bucket. ▲▼ move the card among
+    // its bucket siblings and queue a rankproject op (replayed on Save).
+    var projMoves = [];
+    var pUp = h("button", { type: "button", class: "aemv", title: "move project up" }, ["▲"]);
+    var pDn = h("button", { type: "button", class: "aemv", title: "move project down" }, ["▼"]);
+    pUp.addEventListener("click", function () {
+      if (moveCard(card, -1)) projMoves.push({ op: "rankproject", id: id, dir: "up" });
+    });
+    pDn.addEventListener("click", function () {
+      if (moveCard(card, 1)) projMoves.push({ op: "rankproject", id: id, dir: "down" });
+    });
+    panel.appendChild(h("label", { class: "aef" },
+      ["project ", h("span", { class: "aeprj" }, [pUp, pDn])]));
+
+    // v2.2 (ratified 07-17): one edit row per item (folded done items included)
+    // — ▲▼ reorder, kind switch, tick checkbox (checks) / pct input (bars),
+    // est_h input. Reorder clicks move the row visually AND queue an op; all
+    // ops post on Save (confirmed-only UI, same as everything else).
+    var itemRows = [];      // ordered; {item, kindSel, cb, pctInp, estInp, origs, row}
+    var reorderOps = [];    // ▲▼ clicks in order; replayed server-side on Save
+    var itemsBox = h("div", { class: "aeitems" });
+    card.querySelectorAll(".item[data-ms]").forEach(function (n) {
+      var item = n.getAttribute("data-ms");
+      var kind = n.getAttribute("data-kind") || "bar";
+      var pct = Number(n.getAttribute("data-pct") || 0);
+      var est = n.getAttribute("data-est");
+      var row = h("div", { class: "aeitem" });
+      var upB = h("button", { type: "button", class: "aemv", title: "move up" }, ["▲"]);
+      var dnB = h("button", { type: "button", class: "aemv", title: "move down" }, ["▼"]);
+      var kindSel = selectOf(["check", "bar"], kind);
+      var cb = null, pctInp = null;
+      if (kind === "check") {
+        cb = h("input", { type: "checkbox" });
+        cb.checked = pct >= 100;
+      } else {
+        pctInp = h("input", { type: "number", min: "0", max: "100", step: "1",
+          class: "aepct" });
+        pctInp.value = String(pct);
+      }
+      var estInp = h("input", { type: "number", min: "0", step: "0.5",
+        class: "aeest", placeholder: "h?" });
+      if (est !== null && est !== undefined && est !== "") estInp.value = est;
+      // v2.4: gate note (caution/condition) on this item. Free text, same
+      // escaping/provenance as a note; empty clears it.
+      var gate = n.getAttribute("data-gate");
+      var gateInp = h("input", { type: "text", maxlength: "140",
+        class: "aegate", placeholder: "gate note…" });
+      if (gate) gateInp.value = gate;
+      var sure = h("span", { class: "aesure" });
+      var rec = { item: item, kindSel: kindSel, cb: cb, pctInp: pctInp,
+        estInp: estInp, gateInp: gateInp, origKind: kind, origPct: pct,
+        origEst: (est === null || est === undefined) ? "" : String(est),
+        origGate: (gate === null || gate === undefined) ? "" : String(gate),
+        row: row };
+      // untick = destructive-feeling → inline confirm: first uncheck reverts
+      // and shows "sure?"; a second uncheck within 4s sticks.
+      if (cb) cb.addEventListener("change", function () {
+        if (!cb.checked && rec.origPct >= 100 && !cb._armed) {
+          cb.checked = true;
+          cb._armed = true;
+          sure.textContent = "sure?";
+          setTimeout(function () { cb._armed = false; sure.textContent = ""; }, 4000);
+        } else {
+          sure.textContent = "";
+        }
+      });
+      function moveRow(delta) {
+        var i = itemRows.indexOf(rec), j = i + delta;
+        if (j < 0 || j >= itemRows.length) return;   // edge: no-op, no op queued
+        itemRows.splice(i, 1); itemRows.splice(j, 0, rec);
+        itemsBox.removeChild(rec.row);
+        itemsBox.insertBefore(rec.row, itemsBox.children[j] || null);
+        reorderOps.push({ op: "reorder", id: id, item: rec.item,
+          dir: delta < 0 ? "up" : "down" });
+      }
+      upB.addEventListener("click", function () { moveRow(-1); });
+      dnB.addEventListener("click", function () { moveRow(1); });
+      [upB, dnB, h("span", { class: "aeil" }, [item]), kindSel,
+       cb || pctInp, estInp, gateInp, sure].forEach(function (el) { row.appendChild(el); });
+      itemRows.push(rec);
+      itemsBox.appendChild(row);
+    });
+    if (itemRows.length) panel.appendChild(itemsBox);
+
+    // v2.3: "+ add item" — only in the armed edit state. label required; kind
+    // defaults to check; optional est. Emits an additem op on Save (the id is
+    // the slugified label, computed by the writer). Empty label => no op.
+    var addLabel = h("input", { type: "text", maxlength: "200",
+      placeholder: "+ add item…", class: "aeaddl" });
+    var addKind = selectOf(["check", "bar"], "check");
+    var addEst = h("input", { type: "number", min: "0", step: "0.5",
+      class: "aeest", placeholder: "h?" });
+    panel.appendChild(h("div", { class: "aeadd" }, [addLabel, addKind, addEst]));
+
+    var note = h("textarea", { rows: "2", maxlength: "2000",
+      placeholder: "add a note (logged, no state change)" });
+    panel.appendChild(h("label", { class: "aef anote" }, ["note", note]));
+
+    var err = h("div", { class: "aeerr" });
+    var saveB = h("button", { type: "button", class: "aeb aesave" }, ["Save"]);
+    var cancelB = h("button", { type: "button", class: "aeb aecancel" }, ["Cancel"]);
+    // v2.1: mark-done — rides the existing (ratified) stage op, with an inline
+    // two-tap confirm ("sure?") instead of a dialog. Only offered when the
+    // project isn't already done.
+    var doneB = null;
+    if (card.getAttribute("data-stage") !== "done") {
+      doneB = h("button", { type: "button", class: "aeb aedone" }, ["mark done ✓"]);
+      doneB.addEventListener("click", function () {
+        if (!doneB._armed) {
+          doneB._armed = true;
+          doneB.textContent = "sure?";
+          doneB.classList.add("confirm");
+          doneB._t = setTimeout(function () { resetDone(doneB); }, 4000);
+          return;
+        }
+        clearTimeout(doneB._t);
+        doneB.disabled = true;
+        post({ op: "stage", id: id, stage: "done" }).then(function (res) {
+          if (res.status === 200 && res.body && res.body.ok) { location.reload(); }
+          else {
+            resetDone(doneB);
+            err.textContent = "mark-done failed: " +
+              ((res.body && res.body.error) || res.status);
+          }
+        }).catch(function () {
+          resetDone(doneB);
+          err.textContent = "network error — try again";
+        });
+      });
+    }
+    var bar = [saveB, cancelB];
+    if (doneB) bar.push(doneB);
+    bar.push(err);
+    panel.appendChild(h("div", { class: "aebar" }, bar));
+    card.appendChild(panel);
+
+    cancelB.addEventListener("click", function () { disarm(card, panel); });
+    saveB.addEventListener("click", function () {
+      doSave(id, card, panel, stageSel, heatSel, itemRows, reorderOps,
+        projMoves, { label: addLabel, kind: addKind, est: addEst },
+        note, err, saveB);
+    });
+  }
+
+  function resetDone(b) {
+    b._armed = false;
+    b.disabled = false;
+    b.textContent = "mark done ✓";
+    b.classList.remove("confirm");
+  }
+
+  function collectOps(id, card, stageSel, heatSel, itemRows, reorderOps,
+                      projMoves, addFields, note) {
+    // Op order matters: reorders replay first (they were recorded against the
+    // evolving order), then kind switches (server may snap pct), then ticks and
+    // pct sets, then est edits, then gate edits, then add-item, then project
+    // reorder, then project-level stage/heat/note.
+    var ops = reorderOps.slice();
+    itemRows.forEach(function (r) {
+      if (r.kindSel.value !== r.origKind)
+        ops.push({ op: "kind", id: id, item: r.item, kind: r.kindSel.value });
+    });
+    itemRows.forEach(function (r) {
+      if (r.cb) {                       // was a check
+        var want = r.cb.checked;
+        if (want !== (r.origPct >= 100))
+          ops.push({ op: "tick", id: id, item: r.item, value: want });
+      } else if (r.pctInp) {            // was a bar
+        var v = Number(r.pctInp.value);
+        if (r.pctInp.value !== "" && v >= 0 && v <= 100 && v !== r.origPct &&
+            r.kindSel.value === "bar")  // pct is meaningless if switching to check
+          ops.push({ op: "set", id: id, milestone: r.item, pct: v });
+      }
+    });
+    itemRows.forEach(function (r) {
+      var cur = r.estInp.value.trim();
+      if (cur === r.origEst) return;
+      if (cur === "" && r.origEst !== "")
+        ops.push({ op: "est", id: id, item: r.item, est_h: null });
+      else if (cur !== "") {
+        var e = Number(cur);
+        if (e > 0 && e <= 1000 && String(e) !== r.origEst)
+          ops.push({ op: "est", id: id, item: r.item, est_h: e });
+      }
+    });
+    // v2.4: gate note edits (empty = clear). Item-scoped, like est.
+    itemRows.forEach(function (r) {
+      var g = r.gateInp.value.trim();
+      if (g !== r.origGate)
+        ops.push({ op: "gate", id: id, item: r.item, text: g });
+    });
+    var al = addFields.label.value.trim();
+    if (al) {
+      var aop = { op: "additem", id: id, label: al, kind: addFields.kind.value };
+      var ae = addFields.est.value.trim();
+      if (ae !== "") {
+        var aev = Number(ae);
+        if (aev > 0 && aev <= 1000) aop.est_h = aev;
+      }
+      ops.push(aop);
+    }
+    projMoves.forEach(function (m) { ops.push(m); });
+    if (stageSel.value !== card.getAttribute("data-stage"))
+      ops.push({ op: "stage", id: id, stage: stageSel.value });
+    if (heatSel.value !== (card.getAttribute("data-heat") || "auto"))
+      ops.push({ op: "heat", id: id, level: heatSel.value });
+    var t = note.value.trim();
+    if (t) ops.push({ op: "note", id: id, text: t });
+    return ops;
+  }
+
+  function post(op) {
+    return fetch("/atlas/write", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(op)
+    }).then(function (r) {
+      return r.json().catch(function () { return { ok: false, error: r.status }; })
+        .then(function (j) { return { status: r.status, body: j }; });
+    });
+  }
+
+  function doSave(id, card, panel, stageSel, heatSel, itemRows, reorderOps,
+                  projMoves, addFields, note, err, saveB) {
+    var ops = collectOps(id, card, stageSel, heatSel, itemRows, reorderOps,
+      projMoves, addFields, note);
+    if (!ops.length) { disarm(card, panel); return; }
+    err.textContent = "";
+    saveB.disabled = true;
+    var i = 0;
+    function step() {
+      if (i >= ops.length) { location.reload(); return; }
+      post(ops[i]).then(function (res) {
+        if (res.status === 200 && res.body && res.body.ok) { i++; step(); }
+        else {
+          // Failure: keep the form + typed text (esp. the note), report it.
+          saveB.disabled = false;
+          var msg = (res.body && res.body.error) || res.status;
+          if (res.status === 409) msg = "busy — try again";
+          err.textContent = "save failed on " + ops[i].op + ": " + msg;
+        }
+      }).catch(function () {
+        saveB.disabled = false;
+        err.textContent = "network error — text kept, try again";
+      });
+    }
+    step();
+  }
+
+  // triple-tap / triple-click on a card
+  document.addEventListener("click", function (e) {
+    if (e.target.closest(".atlas-edit")) return; // clicks inside the form
+    var cue = e.target.closest(".atlas-editcue");
+    if (cue) {
+      var c = cue.closest(".prj[data-id]");
+      if (c) { e.preventDefault(); arm(c); }
+      return;
+    }
+    var card = e.target.closest(".prj[data-id]");
+    if (!card) return;
+    var now = Date.now();
+    var rec = taps.get(card);
+    if (!rec || now - rec.t > TRIPLE_MS) rec = { n: 0, t: now };
+    rec.n++; rec.t = now; taps.set(card, rec);
+    if (rec.n >= 3) { taps.set(card, { n: 0, t: now }); arm(card); }
+  });
+
+  // v2.1: collapsible area sections — persist open/closed per area in
+  // localStorage. The <details> element already collapses natively without JS
+  // (and in --present, which omits this script); JS only adds persistence.
+  var LS_COLLAPSE = "atlasAreaCollapse";
+  function collapseMap() {
+    try { return JSON.parse(localStorage.getItem(LS_COLLAPSE)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveCollapse(m) {
+    try { localStorage.setItem(LS_COLLAPSE, JSON.stringify(m)); } catch (e) {}
+  }
+  function initCollapse() {
+    var closed = collapseMap();
+    document.querySelectorAll("details.asec").forEach(function (d) {
+      var id = d.getAttribute("data-area");
+      if (closed[id]) d.open = false;
+      d.addEventListener("toggle", function () {
+        var m = collapseMap();
+        if (d.open) delete m[id]; else m[id] = 1;
+        saveCollapse(m);
+      });
+    });
+    // navigating to #area (top cards) must open a collapsed target section
+    function openHash() {
+      var hid = (location.hash || "").slice(1);
+      if (!hid) return;
+      document.querySelectorAll("details.asec").forEach(function (d) {
+        if (d.getAttribute("data-area") === hid) d.open = true;
+      });
+    }
+    window.addEventListener("hashchange", openHash);
+    openHash();
+  }
+
+  // accessible edit affordance alongside the gesture (JS-only; arms edit mode,
+  // does not itself mutate — no tappable mutator sits on the scroll surface)
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".prj[data-id]").forEach(function (card) {
+      var b = h("button", { type: "button", class: "atlas-editcue",
+        title: "edit (or triple-tap the card)", "aria-label": "edit this project" },
+        ["✎"]);
+      card.appendChild(b);
+    });
+    initCollapse();
+  });
+})();
+</script></body></html>
