@@ -162,7 +162,10 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 
   // ---- scheduler ------------------------------------------------------------
   // schedule(offsets) -> { byKey: {pid#mid: item}, projects: [proj-view] }
-  // offsets = { "pid#mid": deltaDays } ("pid#__prj" for bare project bars).
+  // offsets = { "pid#mid": {ds, dd} } ("pid#__prj" for bare project bars):
+  // ds shifts the start, dd shifts the due. Scoot = both, stretch = one side.
+  var ZOFF = { ds: 0, dd: 0 };
+  function offAt(offsets, key) { return offsets[key] || ZOFF; }
   function toposort(ms) {
     // local deps only; cross-project refs don't constrain in v1
     var idx = {}, indeg = {}, adj = {}, out = [], i, m;
@@ -193,13 +196,13 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     DATA.projects.forEach(function (p) {
       var ms = p.milestones || [];
       var view = { p: p, items: [], cyclic: false };
-      var off = function (mid) { return offsets[p.id + "#" + mid] || 0; };
+      var off = function (mid) { return offAt(offsets, p.id + "#" + mid); };
       var fin = {};   // mid -> {s,d}
 
       if (!ms.length) {
-        var o = offsets[p.id + "#__prj"] || 0;
-        var s0 = (p.start ? pd(p.start) : TODAY) + o;
-        var d0 = (p.due ? pd(p.due) : (p.start ? pd(p.start) : TODAY) + CFG.default_dur) + o;
+        var o = offAt(offsets, p.id + "#__prj");
+        var s0 = (p.start ? pd(p.start) : TODAY) + o.ds;
+        var d0 = (p.due ? pd(p.due) : (p.start ? pd(p.start) : TODAY) + CFG.default_dur) + o.dd;
         if (d0 < s0) d0 = s0;
         var it = { key: p.id + "#__prj", mid: "__prj", label: p.title, s: s0, d: d0,
                    pct: null, kind: "bar", derived: !p.start || !p.due, bare: true };
@@ -214,9 +217,10 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
       function finalize(m, s, d, flags) {
         var o = off(m.id);
         var it = { key: p.id + "#" + m.id, mid: m.id, label: m.label || m.id,
-                   s: s + o, d: d + o, pct: m.pct, kind: m.kind || "bar",
+                   s: s + o.ds, d: d + o.dd, pct: m.pct, kind: m.kind || "bar",
                    est_h: m.est_h || null, deps: m.depends_on || [],
                    derived: !!flags.derived, slipped: false, done: m.pct >= 100 };
+        if (it.s > it.d) it.s = it.d;   // a one-sided stretch can't invert the bar
         // done items pin to done_ts when present, and never "slip"
         if (it.done && m.done_ts) {
           var dd = pd(String(m.done_ts).slice(0, 10));
@@ -569,13 +573,16 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
       var cur = sched.byKey[k], base = BASE.byKey[k];
       if (!base) return;
       if (cur.s === base.s && cur.d === base.d) return;
-      out.push({
+      var c = {
         key: k, direct: !!offsets[k],
         project: k.split("#")[0], milestone: k.split("#")[1],
         from: { start: iso(base.s), due: iso(base.d) },
         to: { start: iso(cur.s), due: iso(cur.d) },
         delta_days: cur.d - base.d
-      });
+      };
+      var df = base.d - base.s + 1, dt = cur.d - cur.s + 1;
+      if (df !== dt) c.duration_days = { from: df, to: dt };
+      out.push(c);
     });
     out.sort(function (a, b) { return (b.direct - a.direct) || (a.key < b.key ? -1 : 1); });
     return out;
@@ -602,9 +609,11 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     sheet.appendChild(head);
     diff.slice(0, 12).forEach(function (c) {
       var sign = c.delta_days > 0 ? "+" : "";
+      var dur = c.duration_days
+        ? " · dur " + c.duration_days.from + "→" + c.duration_days.to + "d" : "";
       sheet.appendChild(el("div", "hzdl" + (c.direct ? "" : " casc"),
         (c.direct ? "" : "↳ ") + c.project + "#" + c.milestone + ": " +
-        sign + c.delta_days + "d → due " + c.to.due + " (was " + c.from.due + ")"));
+        sign + c.delta_days + "d → due " + c.to.due + " (was " + c.from.due + ")" + dur));
     });
     if (diff.length > 12)
       sheet.appendChild(el("div", "hzdl casc", "… +" + (diff.length - 12) + " more in the export"));
@@ -614,16 +623,21 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     // absolute dates on purpose: derived dates move with TODAY, offsets would rot
     var lines = diff.map(function (c) {
       var sign = c.delta_days > 0 ? "+" : "";
+      var dur = c.duration_days
+        ? " · duration " + c.duration_days.from + "→" + c.duration_days.to +
+          "d (~est " + (c.duration_days.to * CFG.focus_h_per_day) + "h)" : "";
       return (c.direct ? "" : "  ↳ ") + c.project + "#" + c.milestone + ": " +
         sign + c.delta_days + "d → " + c.to.start + " .. " + c.to.due +
-        " (was " + c.from.start + " .. " + c.from.due + ")";
+        " (was " + c.from.start + " .. " + c.from.due + ")" + dur;
     });
     var payload = {
       horizons_proposal: {
         generated: DATA.today,
         changes: diff.map(function (c) {
-          return { project: c.project, milestone: c.milestone, from: c.from,
-                   to: c.to, delta_days: c.delta_days, cascade: !c.direct };
+          var x = { project: c.project, milestone: c.milestone, from: c.from,
+                    to: c.to, delta_days: c.delta_days, cascade: !c.direct };
+          if (c.duration_days) x.duration_days = c.duration_days;
+          return x;
         })
       }
     };
@@ -649,12 +663,31 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
   function wireDrag(scroll, sched, t0) {
     scroll.querySelectorAll(".hzbar[data-key], .hzcheck[data-key]").forEach(function (b) {
       if (b.classList.contains("ghost")) return;
+      // zones (David's 10/70/20 intent, phone-safe): edge = max(14px, 20% of
+      // width) each side; bars too narrow for three zones scoot whole.
+      function zoneAt(ev2) {
+        if (b.classList.contains("hzcheck")) return "move";   // single-date glyph
+        var rect = b.getBoundingClientRect();
+        if (rect.width < 44) return "move";
+        var x = ev2.clientX - rect.left;
+        var edge = Math.max(14, rect.width * 0.2);
+        return x < edge ? "start" : (x > rect.width - edge ? "end" : "move");
+      }
+      b.addEventListener("pointermove", function (ev2) {
+        if (ev2.buttons || !sandbox) return;   // hover affordance only
+        var z = zoneAt(ev2);
+        b.style.cursor = z === "move" ? "grab" : "ew-resize";
+      });
+
       b.addEventListener("pointerdown", function (ev) {
         var key = b.dataset.key;
         var startX = ev.clientX, startY = ev.clientY;
         var dragging = false, moved = false, delta = 0;
+        var mode = zoneAt(ev);
         var it = sched.byKey[key];
         if (!it) return;
+        var origW = b.getBoundingClientRect().width;
+        var durDays = it.d - it.s + 1;
 
         function move(e2) {
           var dx = e2.clientX - startX;
@@ -669,9 +702,21 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
           if (!dragging) return;
           e2.preventDefault();
           delta = Math.round(dx / PXD);
-          b.style.transform = "translateX(" + (delta * PXD) + "px)";
-          var nd = it.d + delta, sign = delta > 0 ? "+" : "";
-          tip.textContent = sign + delta + "d → " + shortD(nd);
+          // stretch clamps: a bar never shrinks below one day
+          if (mode === "end" && delta < 1 - durDays) delta = 1 - durDays;
+          if (mode === "start" && delta > durDays - 1) delta = durDays - 1;
+          var sign = delta > 0 ? "+" : "";
+          if (mode === "move") {
+            b.style.transform = "translateX(" + (delta * PXD) + "px)";
+            tip.textContent = sign + delta + "d → " + shortD(it.d + delta);
+          } else if (mode === "end") {
+            b.style.width = Math.max(4, origW + delta * PXD) + "px";
+            tip.textContent = "dur " + sign + delta + "d → " + shortD(it.d + delta);
+          } else {
+            b.style.transform = "translateX(" + (delta * PXD) + "px)";
+            b.style.width = Math.max(4, origW - delta * PXD) + "px";
+            tip.textContent = "start " + sign + delta + "d → " + shortD(it.s + delta);
+          }
           tip.style.left = (e2.clientX + 12) + "px";
           tip.style.top = (e2.clientY - 34) + "px";
           tip.classList.add("on");
@@ -683,13 +728,17 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
           tip.classList.remove("on");
           b.classList.remove("dragging");
           b.style.transform = "";
+          b.style.width = origW + "px";   // render() re-derives the real width
         }
         function up() {
           cleanup();
           if (dragging && delta !== 0) {
             undoStack.push(JSON.stringify(offsets));
-            offsets[key] = (offsets[key] || 0) + delta;
-            if (!offsets[key]) delete offsets[key];
+            var prev = offsets[key] || ZOFF;
+            var o = { ds: prev.ds, dd: prev.dd };
+            if (mode !== "end") o.ds += delta;
+            if (mode !== "start") o.dd += delta;
+            if (!o.ds && !o.dd) delete offsets[key]; else offsets[key] = o;
             render();
           } else if (!moved) {
             highlighted = (highlighted === key) ? null : key;
@@ -722,9 +771,10 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     bar.appendChild(pill);
     if (DATA.demo)
       bar.appendChild(el("span", "hzhint",
-        "drag any bar — downstream dates follow · tap a bar to trace its dependency chain"));
+        "drag a bar's middle to slip it — downstream dates follow · drag an edge to stretch its duration · tap to trace the dependency chain"));
     else
-      bar.appendChild(el("span", "hzhint", "tap a bar to trace its dependency chain"));
+      bar.appendChild(el("span", "hzhint",
+        "sandbox on: middle = slip, edges = stretch · tap a bar to trace its dependency chain"));
   }
 
   var GUT = 148;
