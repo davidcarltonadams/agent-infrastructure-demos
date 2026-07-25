@@ -63,8 +63,15 @@ border-radius:7px;padding:0 5px;margin-left:5px;vertical-align:1px;font-weight:4
 .hzitrow .hzlane{height:22px}
 .hzchip{display:inline-block;font-size:9px;color:var(--dim);border:1px solid var(--line);
 border-radius:7px;padding:0 4px;margin-left:5px;vertical-align:1px}
-.hzbar{position:absolute;top:5px;height:12px;border-radius:5px;overflow:hidden;
+.hzbar{position:absolute;top:5px;height:12px;border-radius:5px;overflow:visible;
 cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* invisible touch padding (sandbox only) — 12px bars are surgeon-aim targets */
+body.sandbox .hzbar:not(.ghost)::before,body.sandbox .hzcheck::before{content:"";
+position:absolute;left:-5px;right:-5px;top:-9px;bottom:-9px}
+.hzgrip{display:none;position:absolute;top:2px;bottom:2px;width:3px;
+border-radius:2px;background:rgba(232,224,208,.55);pointer-events:none}
+.hzgrip.l{left:3px}.hzgrip.r{right:3px}
+body.sandbox .hzgrip{display:block}
 .hzbar .hzfill{display:block;height:100%;border-radius:5px;opacity:.9}
 .hzbar.bare{opacity:.55}
 .hzlchip{position:absolute;top:4px;font-size:9px;color:var(--amber);
@@ -143,8 +150,13 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     { focus_h_per_day: 2, default_dur: 7, max_dur: 90 }, DATA.cfg || {});
   var DAY = 86400000;
   var TODAY = pd(DATA.today);
-  var PXW = 44;                 // px per week
-  var PXD = PXW / 7;
+  // in-app zoom instead of browser pinch: iOS claims touch gestures for
+  // panning while pinch-zoomed, killing bar drags (David, 07-25)
+  var ZOOMS = [44, 88, 132];    // px per week
+  var zi = 0;
+  try { zi = Math.min(2, parseInt(localStorage.getItem("hz-zoom") || "0", 10) || 0); }
+  catch (e) { zi = 0; }
+  var PXD = ZOOMS[zi] / 7;
 
   // ---- date helpers (integer days since epoch; ISO strings parse as UTC) ----
   function pd(iso) { return Math.round(Date.parse(iso + "T00:00:00Z") / DAY); }
@@ -523,6 +535,11 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
             // unmet dep → dashed red outline (same semantic as atlas .dep)
             var blocked = (it.deps || []).some(function (dep) { return depUnmet(dep, p); });
             if (blocked && !it.done) b.classList.add("depblock");
+            // visible stretch grips (sandbox-only via CSS) on three-zone bars
+            if ((it.d - it.s + 1) * PXD >= 44 && !it.done) {
+              b.appendChild(el("span", "hzgrip l"));
+              b.appendChild(el("span", "hzgrip r"));
+            }
             l.appendChild(b);
           }
 
@@ -681,7 +698,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 
       b.addEventListener("pointerdown", function (ev) {
         var key = b.dataset.key;
-        var startX = ev.clientX, startY = ev.clientY;
+        var startX = ev.clientX, startY = ev.clientY, downT = Date.now();
         var dragging = false, moved = false, delta = 0;
         var mode = zoneAt(ev);
         var it = sched.byKey[key];
@@ -740,7 +757,8 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
             if (mode !== "start") o.dd += delta;
             if (!o.ds && !o.dd) delete offsets[key]; else offsets[key] = o;
             render();
-          } else if (!moved) {
+          } else if (!moved && Date.now() - downT < 350) {
+            // strict tap: quick AND still — pans/aborted drags never highlight
             highlighted = (highlighted === key) ? null : key;
             applyHighlight();
           }
@@ -759,6 +777,18 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
   // ---- top bar -------------------------------------------------------------
   function renderBar() {
     bar.textContent = "";
+    var zp = el("button", "hzpill", "zoom ×" + (zi + 1));
+    zp.onclick = function () {
+      var old = PXD;
+      zi = (zi + 1) % ZOOMS.length;
+      PXD = ZOOMS[zi] / 7;
+      try { localStorage.setItem("hz-zoom", String(zi)); } catch (e) {}
+      zp.textContent = "zoom ×" + (zi + 1);
+      render();
+      var sc = app.querySelector(".hzscroll");
+      if (sc) sc.scrollLeft = sc.scrollLeft * (PXD / old);   // keep the view anchored
+    };
+    bar.appendChild(zp);
     var pill = el("button", "hzpill" + (sandbox ? " on" : ""),
       "sandbox: " + (sandbox ? "on" : "off"));
     pill.onclick = function () {
