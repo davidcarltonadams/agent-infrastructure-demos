@@ -1,6 +1,6 @@
 # Agent Infrastructure — Interactive Demos
 
-Two self-contained, fully synthetic demos from a personal multi-agent system
+Three self-contained, fully synthetic demos from a personal multi-agent system
 designed, built, and operated daily by [David Carlton Adams](https://davidcarltonadams.com).
 
 **All data here is fictional.** Projects, people, feeds, and findings belong to
@@ -19,8 +19,17 @@ Live via GitHub Pages:
 - **[The Gazette](./gazette-demo.html)** — a daily personal newspaper
   assembled overnight from monitored feeds: classifieds ranked by fit,
   a puzzle corner, term-of-day, and a graded daily course lesson.
+- **[Horizons](./horizons-demo.html)** — a timeline + what-if sandbox over the
+  same state layer Atlas renders. Schedules are *derived* (dependency order +
+  effort estimates, backward-packed from deadlines) where no explicit dates
+  exist; drag any bar and downstream derived dates cascade live. The sandbox
+  is client-side only by design — "copy scenario" exports a proposal for the
+  validating CLI to apply later, so playing with the plan can never mutate
+  canonical state (decision ≠ execution). One rendering engine serves both
+  this public synthetic demo (JS inlined, self-contained) and the private
+  authed surface (JS served separately to satisfy a strict CSP).
 
-Both files are single self-contained HTML documents — no external requests,
+All files are single self-contained HTML documents — no external requests,
 no trackers, nothing loaded from anywhere.
 
 ## The architecture behind them
