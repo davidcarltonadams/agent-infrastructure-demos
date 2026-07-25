@@ -32,6 +32,8 @@ border:1px solid var(--line);border-radius:12px;padding:4px 12px;cursor:pointer}
 .hzinner{position:relative;padding-bottom:96px}
 .hzgridlayer{position:absolute;top:0;bottom:0;z-index:0;pointer-events:none}
 .hzgrid{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.6}
+.hzgrid.sub{opacity:.28}
+.hzmon.sub{opacity:.55;font-size:9px}
 .hztoday{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--gold);
 opacity:.75;z-index:1}
 .hzrow{display:flex;position:relative;z-index:1}
@@ -385,11 +387,14 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     // grid layer: month lines + today line (behind rows, offset past gutter)
     var grid = el("div", "hzgridlayer");
     grid.style.left = GUT + "px"; grid.style.width = chartW + "px";
+    // finer axis at higher zoom so edits aren't flying blind (David, 07-25):
+    // x1 = month starts; x2 adds the 15th; x3 adds the 10th + 20th
+    var subDays = zi === 0 ? [] : (zi === 1 ? [15] : [10, 20]);
     var d = t0;
     while (d <= t1) {
-      var dt = new Date(d * DAY);
-      if (dt.getUTCDate() === 1) {
-        var gl = el("div", "hzgrid");
+      var dt = new Date(d * DAY), dom = dt.getUTCDate();
+      if (dom === 1 || subDays.indexOf(dom) >= 0) {
+        var gl = el("div", "hzgrid" + (dom === 1 ? "" : " sub"));
         gl.style.left = ((d - t0) * PXD) + "px";
         grid.appendChild(gl);
       }
@@ -407,12 +412,16 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     lane.style.width = chartW + "px";
     d = t0;
     while (d <= t1) {
-      var dt2 = new Date(d * DAY);
-      if (dt2.getUTCDate() === 1) {
+      var dt2 = new Date(d * DAY), dom2 = dt2.getUTCDate();
+      if (dom2 === 1) {
         var lab = el("span", "hzmon", MON[dt2.getUTCMonth()] +
           (dt2.getUTCMonth() === 0 ? " " + dt2.getUTCFullYear() : ""));
         lab.style.left = ((d - t0) * PXD + 3) + "px";
         lane.appendChild(lab);
+      } else if (subDays.indexOf(dom2) >= 0) {
+        var slab = el("span", "hzmon sub", shortD(d));
+        slab.style.left = ((d - t0) * PXD + 3) + "px";
+        lane.appendChild(slab);
       }
       d++;
     }
