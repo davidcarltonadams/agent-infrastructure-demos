@@ -13,12 +13,19 @@ Live via GitHub Pages:
 
 - **[Atlas](./atlas-demo.html)** — a one-true-state project layer: every
   project a card, every milestone a bar, dependency chips, collapse at every
-  level. The real Atlas is written to by exactly one validating CLI, and every
-  mutation carries a logged one-line reason — the audit trail is what keeps
-  "canonical" honest.
+  level. Also shown: a derived **heat index** (hot/waiting/decision-needed/
+  chill — badges here, in production just an accent color on the status
+  dot), explicit **rank overrides** for pulling a project above its heat
+  sort, and an **estimate ledger** per project (when the estimate was made,
+  by whom, sessions/wall-days, scope) — the calibration record that keeps
+  future estimates honest. The real Atlas is written to by exactly one
+  validating CLI, and every mutation carries a logged one-line reason — the
+  audit trail is what keeps "canonical" honest.
 - **[The Gazette](./gazette-demo.html)** — a daily personal newspaper
   assembled overnight from monitored feeds: classifieds ranked by fit,
-  a puzzle corner, term-of-day, and a graded daily course lesson.
+  a puzzle corner, term-of-day, a graded daily course lesson, and a Docket
+  digest — open/discuss/decided/applied decision cards surfaced into the
+  paper so nothing sits unresolved past standup.
 - **[Horizons](./horizons-demo.html)** — a timeline + what-if sandbox over the
   same state layer Atlas renders. Schedules are *derived* (dependency order +
   effort estimates, backward-packed from deadlines) where no explicit dates
@@ -49,3 +56,9 @@ different jobs and different trust levels:
   over the ingestion lanes.
 
 Built with Claude Code, hardened iteratively, and in daily use.
+
+---
+Last updated: 2026-08-17 — refreshed with richer synthetic data (heat, rank,
+estimate ledgers, a Docket digest) to track what the real system does today.
+All content remains fictional; see the security-review checklist on the PR
+that introduced this refresh.
