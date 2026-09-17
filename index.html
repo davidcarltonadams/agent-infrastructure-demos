@@ -1,18 +1,71 @@
-<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>Agent Infrastructure — Demos</title>
+<meta name="description" content="Synthetic demos of a personal multi-agent system by David Carlton Adams.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151210'/%3E%3Crect x='12' y='16' width='40' height='8' rx='4' fill='%23d4a24e'/%3E%3Crect x='12' y='29' width='26' height='8' rx='4' fill='%23d4a24e' opacity='.65'/%3E%3Crect x='12' y='42' width='33' height='8' rx='4' fill='%23d4a24e' opacity='.4'/%3E%3C/svg%3E">
 <style>
-body{font:17px/1.6 Georgia,serif;max-width:640px;margin:8vh auto;padding:0 20px;color:#222}
-h1{font-size:26px} a{color:#0a58a8} .card{border:1px solid #ddd;border-radius:8px;padding:16px 20px;margin:16px 0}
-.note{color:#777;font-size:14px}
-</style></head><body>
+:root{--bg:#14110e;--panel:#1d1915;--panel2:#241f19;--line:#332c23;
+--txt:#e8e0d0;--dim:#9a8f7d;--gold:#d4a24e;--blue:#7c9fd4;--green:#6fae8f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+font:15px/1.5 -apple-system,'Helvetica Neue',sans-serif;padding:14px 12px 60px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font:700 21px Georgia,serif;color:var(--gold);margin:4px 0 14px}
+.lead{margin:0 0 20px;max-width:60ch}
+.lead a{color:var(--txt);text-decoration-color:var(--line)}
+.lead a:hover{text-decoration-color:var(--gold)}
+
+.cards{display:flex;flex-direction:column;gap:10px;margin:0 0 20px}
+.card{display:flex;gap:13px;align-items:flex-start;
+background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--ac);
+border-radius:10px;padding:14px 15px;text-decoration:none;color:inherit}
+.card:hover,.card:focus-visible{background:var(--panel2);border-color:#473d30;
+border-left-color:var(--ac);outline:none}
+.card:focus-visible{box-shadow:0 0 0 2px var(--ac)}
+.mark{flex:0 0 34px;width:34px;height:34px;margin-top:1px;border-radius:8px;
+user-select:none;pointer-events:none}
+.name{font:700 16px Georgia,serif;color:var(--ac);margin:0 0 3px}
+.desc{margin:0;color:var(--txt);font-size:14px;line-height:1.45}
+.card:hover .name{text-decoration:underline;text-decoration-color:var(--ac);
+text-underline-offset:3px}
+
+.note{color:var(--dim);font-size:12.5px;margin:0;border-top:1px solid var(--line);
+padding-top:12px}
+.note a{color:var(--dim)}
+.note a:hover{color:var(--gold)}
+@media (max-width:420px){.mark{flex-basis:28px;width:28px;height:28px}
+.card{padding:12px 13px;gap:11px}}
+</style></head>
+<body><div class="wrap">
+
 <h1>Agent Infrastructure — Interactive Demos</h1>
-<p>Synthetic demos of a personal multi-agent system by
+
+<p class="lead">Synthetic demos of a personal multi-agent system by
 <a href="https://davidcarltonadams.com">David Carlton Adams</a>.
 All data is fictional; the architecture and interaction are real.</p>
-<div class="card"><a href="atlas-demo.html"><strong>Flightpath</strong></a> — one-true-state project layer: cards, milestone bars, dependencies, collapse at every level.</div>
-<div class="card"><a href="gazette-demo.html"><strong>The Gazette</strong></a> — a daily personal newspaper: ranked classifieds, puzzle corner, graded course lesson.</div>
-<div class="card"><a href="horizons-demo.html"><strong>Gander</strong></a> — timeline + what-if sandbox over the same state layer: derived schedules, dependency cascades. Drag a bar and downstream dates follow; copy the scenario out as a proposal.</div>
-<p class="note">Self-contained HTML, no external requests. See the <a href="https://github.com/davidcarltonadams/agent-infrastructure-demos">README</a> for the architecture notes.</p>
-</body></html>
+
+<div class="cards">
+
+<a class="card" style="--ac:var(--gold)" href="atlas-demo.html">
+<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#151210"/><rect x="12" y="16" width="40" height="8" rx="4" fill="#d4a24e"/><rect x="12" y="29" width="26" height="8" rx="4" fill="#d4a24e" opacity=".65"/><rect x="12" y="42" width="33" height="8" rx="4" fill="#d4a24e" opacity=".4"/></svg>
+<div><p class="name">Flightpath</p>
+<p class="desc">one-true-state project layer: cards, milestone bars, dependencies, collapse at every level.</p></div></a>
+
+<a class="card" style="--ac:var(--green)" href="gazette-demo.html">
+<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#151210"/><text x="32" y="45" font-family="Georgia,serif" font-size="36" font-weight="700" fill="#6fae8f" text-anchor="middle">G</text></svg>
+<div><p class="name">The Gazette</p>
+<p class="desc">a daily personal newspaper: ranked classifieds, puzzle corner, graded course lesson.</p></div></a>
+
+<a class="card" style="--ac:var(--blue)" href="horizons-demo.html">
+<svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#151210"/><rect x="10" y="14" width="26" height="7" rx="3.5" fill="#7c9fd4"/><rect x="20" y="26" width="30" height="7" rx="3.5" fill="#7c9fd4" opacity=".65"/><rect x="30" y="38" width="24" height="7" rx="3.5" fill="#7c9fd4" opacity=".4"/><line x1="32" y1="8" x2="32" y2="56" stroke="#7c9fd4" stroke-width="2" stroke-dasharray="3 3" opacity=".8"/></svg>
+<div><p class="name">Gander</p>
+<p class="desc">timeline + what-if sandbox over the same state layer: derived schedules, dependency cascades. Drag a bar and downstream dates follow; copy the scenario out as a proposal.</p></div></a>
+
+</div>
+
+<p class="note">Self-contained HTML, no external requests. See the
+<a href="https://github.com/davidcarltonadams/agent-infrastructure-demos">README</a>
+for the architecture notes.</p>
+
+</div></body></html>
