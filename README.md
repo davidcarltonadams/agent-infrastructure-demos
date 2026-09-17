@@ -11,14 +11,14 @@ the real system's.
 
 Live via GitHub Pages:
 
-- **[Atlas](./atlas-demo.html)** — a one-true-state project layer: every
+- **[Flightpath](./atlas-demo.html)** — a one-true-state project layer: every
   project a card, every milestone a bar, dependency chips, collapse at every
   level. Also shown: a derived **heat index** (hot/waiting/decision-needed/
   chill — badges here, in production just an accent color on the status
   dot), explicit **rank overrides** for pulling a project above its heat
   sort, and an **estimate ledger** per project (when the estimate was made,
   by whom, sessions/wall-days, scope) — the calibration record that keeps
-  future estimates honest. The real Atlas is written to by exactly one
+  future estimates honest. The real Flightpath is written to by exactly one
   validating CLI, and every mutation carries a logged one-line reason — the
   audit trail is what keeps "canonical" honest.
 - **[The Gazette](./gazette-demo.html)** — a daily personal newspaper
@@ -26,8 +26,8 @@ Live via GitHub Pages:
   a puzzle corner, term-of-day, a graded daily course lesson, and a Docket
   digest — open/discuss/decided/applied decision cards surfaced into the
   paper so nothing sits unresolved past standup.
-- **[Horizons](./horizons-demo.html)** — a timeline + what-if sandbox over the
-  same state layer Atlas renders. Schedules are *derived* (dependency order +
+- **[Gander](./horizons-demo.html)** — a timeline + what-if sandbox over the
+  same state layer Flightpath renders. Schedules are *derived* (dependency order +
   effort estimates, backward-packed from deadlines) where no explicit dates
   exist; drag any bar and downstream derived dates cascade live. The sandbox
   is client-side only by design — "copy scenario" exports a proposal for the
