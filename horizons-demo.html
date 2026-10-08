@@ -957,7 +957,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
   function fallbackCopy(text) {
     var ta = document.createElement("textarea");
     ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-    document.body.appendChild(ta); ta.select();
+    document.body.appendChild(ta); ta.focus(); ta.select();
     try { document.execCommand("copy"); } catch (e) {}
     document.body.removeChild(ta);
   }
@@ -1138,8 +1138,10 @@ margin:-10px 0 6px;padding:10px 0 4px}
 <script type="application/json" id="hz-deps-data">{"source": "render_deps.py", "today": "2026-10-02", "critical": ["arts-council-grant#narrative", "arts-council-grant#budget", "arts-council-grant#samples", "residency-app#materials", "fall-concert#rehearsals", "ep-release#tracking", "ep-release#mix", "ep-release#master", "quartet-commission#draft", "quartet-commission#parts", "booking-system#model", "booking-system#pilot"]}</script>
 <script>
 /* demo layer (horizons-demo.html only). gander_engine.js and gander.js above
- * are the real files, inlined unchanged by render_gander.py. This script reads
- * their output and adds two things:
+ * are the real files, inlined by render_gander.py; one line differs on this
+ * page: gander.js's clipboard fallback focuses its textarea before selecting
+ * it, so the copy event lands on the textarea in every browser. This script
+ * reads their output and adds two things:
  *  1. critical path: the keys in #hz-deps-data come from render_deps.py run on
  *     this page's store; every render() of the timeline gets them re-marked.
  *  2. card preview: when "copy scenario" hands gander.js's proposal text to
