@@ -1188,6 +1188,15 @@ margin:-10px 0 6px;padding:10px 0 4px}
   var panel = document.getElementById("hz-deps");
   if (panel && window.innerWidth >= 980 && window.innerHeight >= 820) panel.open = true;
 
+  // a slack-table link to the hash already in the URL fires no hashchange, so
+  // after a bar tap cleared the highlight a second click would light nothing:
+  // replay the event and gander.js re-reads the unchanged hash
+  if (panel) panel.addEventListener("click", function (e) {
+    var a = e.target.closest ? e.target.closest('a[href^="#"]') : null;
+    if (a && a.getAttribute("href") === location.hash)
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+  });
+
   // ---- scenario -> Docket card (docket.py add_card fields, _card_html markup)
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
