@@ -47,7 +47,11 @@ white-space:nowrap;border-right:1px solid var(--line)}
 .hzmon{position:absolute;top:3px;font:10.5px ui-monospace,'SF Mono',Menlo,monospace;
 color:var(--dim);letter-spacing:.5px}
 .hzarearow{margin-top:14px}
-.hzarea{font:700 13px Georgia,serif;height:24px;line-height:24px}
+.hzarea{font:700 13px Georgia,serif;height:24px;line-height:24px;cursor:pointer;
+-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+.hzarearow .hzlane{height:24px}
+.hzarearow.clps .hzarea::after{content:" ▸";color:var(--dim);font-size:11px}
+.hzlchip.area{color:var(--dim);border-color:var(--line);top:7px}
 .hzprjrow{margin-top:4px}
 .hzprjrow .hzgut{font-weight:650;height:24px;line-height:20px;cursor:pointer;
 -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
@@ -84,6 +88,11 @@ border:1px solid #5a4a28;border-radius:7px;padding:0 5px;white-space:nowrap}
 .hzbar.depblock{outline:1.5px dashed var(--red);outline-offset:1px}
 .hzbar.done{opacity:.4}
 .hzbar.ghost{opacity:.22;background:var(--dim)!important;pointer-events:none;outline:none}
+/* retired = frozen fragment: ghosted but dashed-outlined (history, not a
+   sandbox baseline) — ends at retired_ts, never draggable */
+.hzbar.retired{opacity:.28;outline:1px dashed var(--dim);outline-offset:1px;
+pointer-events:none}
+.hzcheck.retired{color:var(--dim);opacity:.5;pointer-events:none}
 .hzbar.dragging{z-index:5;box-shadow:0 2px 10px rgba(0,0,0,.6)}
 .hzcheck{position:absolute;top:3px;font-size:12px;color:var(--dim);line-height:1;
 cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -118,7 +127,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 </style></head><body>
 <div class="hd">
 <h1>gander</h1>
-<div class="stamp">rendered 2026-07-25 · <a href="index.html">← demos index</a></div>
+<div class="stamp">snapshot 2026-10-02 · synthetic · <a href="index.html">demos →</a> · <a href="atlas-demo.html">flightpath →</a> · <a href="trace-demo.html">trace →</a></div>
 <div class='demobanner'>Synthetic demo — every project, date and name here is fictional. The engine (schedule derivation, dependency cascade, sandbox) is the real system's.</div>
 <div class="legend"><span>▬ dated</span><span>⌇ dotted = derived</span>
 <span>▤ translucent = tentative</span><span>│ gold line = today</span>
@@ -127,57 +136,57 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 </div>
 <div id="hz-app"></div>
 <div id="hz-sheet"></div>
-<noscript><div class='nojs'><p>Gander is an interactive timeline and needs JavaScript. Projects on the board:</p><ul><li>Aster Quartet — commissioned premiere — due 2026-12-02</li><li>Ensemble booking mini-CRM</li><li>EP: Signal Fires — due 2026-10-13</li><li>Refraction — fall program — due 2026-08-15</li><li>Lantern — co-production, next season — due 2027-05-21</li><li>Lantern (chamber opera) — stage w/ Driftlight — due 2026-12-22</li><li>Larkspur residency application — due 2026-10-28</li><li>Meridian Arts Council grant — due 2026-09-03</li><li>Spring mini-tour (3 cities) — due 2027-02-10</li></ul></div></noscript>
-<script type="application/json" id="hz-data">{"today": "2026-07-25", "demo": true, "cfg": {"focus_h_per_day": 2, "default_dur": 7, "max_dur": 90}, "areas": [{"id": "composition", "label": "Composition", "color": "#d4a24e"}, {"id": "income", "label": "Income & Roles", "color": "#e07a3f"}, {"id": "org", "label": "Halcyon Collective", "color": "#6fae8f"}, {"id": "systems", "label": "Systems", "color": "#7c9fd4"}], "projects": [{"id": "aster-premiere", "title": "Aster Quartet — commissioned premiere", "area": "composition", "stage": "active", "due": "2026-12-02", "due_type": "external", "milestones": [{"id": "sketches", "label": "Sketches", "pct": 100, "done_ts": "2026-06-15"}, {"id": "draft", "label": "Draft score", "pct": 45, "est_h": 40}, {"id": "parts", "label": "Parts extracted", "pct": 0, "est_h": 12, "depends_on": ["draft"]}, {"id": "workshop", "label": "Workshop reading", "pct": 0, "kind": "check", "due": "2026-09-23"}, {"id": "revisions", "label": "Revisions", "pct": 0, "est_h": 16, "depends_on": ["workshop"]}, {"id": "premiere", "label": "Premiere", "pct": 0, "kind": "check", "due": "2026-12-02"}]}, {"id": "booking-tool", "title": "Ensemble booking mini-CRM", "area": "systems", "stage": "active", "milestones": [{"id": "model", "label": "Data model", "pct": 40, "est_h": 30}, {"id": "pilot", "label": "Pilot with one ensemble", "pct": 0, "est_h": 20, "depends_on": ["model"]}]}, {"id": "ep-release", "title": "EP: Signal Fires", "area": "composition", "stage": "active", "due": "2026-10-13", "due_type": "internal", "milestones": [{"id": "tracking", "label": "Tracking", "pct": 70, "est_h": 20}, {"id": "mix", "label": "Mix", "pct": 0, "est_h": 16, "depends_on": ["tracking"]}, {"id": "master", "label": "Master", "pct": 0, "est_h": 6, "depends_on": ["mix"]}, {"id": "distro", "label": "Distributor upload", "pct": 0, "kind": "check", "depends_on": ["master"]}, {"id": "release", "label": "Release day", "pct": 0, "kind": "check"}]}, {"id": "fall-concert", "title": "Refraction — fall program", "area": "org", "stage": "active", "due": "2026-08-15", "due_type": "external", "milestones": [{"id": "program", "label": "Program locked", "pct": 100, "kind": "check", "done_ts": "2026-06-23"}, {"id": "venue", "label": "Venue confirmed", "pct": 100, "kind": "check", "done_ts": "2026-07-04"}, {"id": "notes", "label": "Program notes", "pct": 30, "due": "2026-07-21", "est_h": 8}, {"id": "rehearsals", "label": "Rehearsal block", "pct": 60, "start": "2026-07-11", "est_h": 30}, {"id": "marketing", "label": "Announce + press", "pct": 0, "kind": "check", "depends_on": ["venue"]}, {"id": "performance", "label": "Performance", "pct": 0, "kind": "check", "due": "2026-08-15"}]}, {"id": "lantern-next-season", "title": "Lantern — co-production, next season", "area": "composition", "stage": "idea", "start": "2027-04-01", "due": "2027-05-21", "tentative": true, "scenario": "lantern-staging", "milestones": []}, {"id": "lantern-this-season", "title": "Lantern (chamber opera) — stage w/ Driftlight", "area": "composition", "stage": "planned", "start": "2026-10-23", "due": "2026-12-22", "tentative": true, "scenario": "lantern-staging", "milestones": []}, {"id": "larkspur-residency", "title": "Larkspur residency application", "area": "income", "stage": "planned", "due": "2026-10-28", "due_type": "external", "milestones": [{"id": "materials", "label": "Materials + recording", "pct": 0, "est_h": 8, "depends_on": ["project:ep-release#master"]}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check"}]}, {"id": "meridian-grant", "title": "Meridian Arts Council grant", "area": "income", "stage": "active", "due": "2026-09-03", "due_type": "external", "milestones": [{"id": "narrative", "label": "Narrative draft", "pct": 50, "est_h": 10}, {"id": "budget", "label": "Budget", "pct": 0, "est_h": 4}, {"id": "samples", "label": "Work samples", "pct": 0, "est_h": 6}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check"}]}, {"id": "spring-tour", "title": "Spring mini-tour (3 cities)", "area": "org", "stage": "idea", "start": "2026-12-22", "due": "2027-02-10", "tentative": true, "milestones": []}]}</script>
+<noscript><div class='nojs'><p>Gander is an interactive timeline and needs JavaScript. Projects on the board:</p><ul><li>Arts council grant application — due 2026-10-14</li><li>Booking system pilot</li><li>EP release — due 2026-12-21</li><li>Fall concert production — due 2026-10-26</li><li>Commissioned quartet premiere — due 2027-02-09</li><li>Residency application — due 2027-01-05</li><li>Spring tour (three cities) — due 2027-04-20</li><li>Opera staging, option B: co-production next season — due 2027-07-29</li><li>Opera staging, option A: this season — due 2027-03-01</li></ul></div></noscript>
+<script type="application/json" id="hz-data">{"today": "2026-10-02", "demo": true, "cfg": {"focus_h_per_day": 2, "default_dur": 7, "max_dur": 90, "calibration": {}}, "areas": [{"id": "income", "label": "Income & Roles", "color": "#e07a3f"}, {"id": "org", "label": "Halcyon Collective", "color": "#6fae8f"}, {"id": "composition", "label": "Composition", "color": "#d4a24e"}, {"id": "systems", "label": "Systems", "color": "#7c9fd4"}], "projects": [{"id": "arts-council-grant", "title": "Arts council grant application", "area": "income", "stage": "active", "due": "2026-10-14", "due_type": "external", "milestones": [{"id": "narrative", "label": "Narrative draft", "pct": 0, "est_h": 10}, {"id": "budget", "label": "Budget", "pct": 0, "est_h": 4, "depends_on": ["narrative"]}, {"id": "samples", "label": "Work samples", "pct": 0, "est_h": 6, "depends_on": ["budget"]}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check", "due": "2026-10-14", "depends_on": ["samples"]}]}, {"id": "booking-system", "title": "Booking system pilot", "area": "systems", "stage": "active", "milestones": [{"id": "model", "label": "Data model", "pct": 40, "est_h": 30}, {"id": "pilot", "label": "Pilot with one client", "pct": 0, "est_h": 20, "depends_on": ["model"]}]}, {"id": "ep-release", "title": "EP release", "area": "composition", "stage": "active", "due": "2026-12-21", "due_type": "internal", "milestones": [{"id": "tracking", "label": "Tracking", "pct": 70, "est_h": 20}, {"id": "mix", "label": "Mix", "pct": 0, "est_h": 16, "depends_on": ["tracking"]}, {"id": "master", "label": "Master", "pct": 0, "est_h": 6, "depends_on": ["mix"]}, {"id": "distro", "label": "Distributor upload", "pct": 0, "kind": "check", "depends_on": ["master"]}, {"id": "release", "label": "Release day", "pct": 0, "kind": "check"}]}, {"id": "fall-concert", "title": "Fall concert production", "area": "org", "stage": "active", "due": "2026-10-26", "due_type": "external", "milestones": [{"id": "program", "label": "Program locked", "pct": 100, "kind": "check", "done_ts": "2026-08-31"}, {"id": "venue", "label": "Venue confirmed", "pct": 100, "kind": "check", "done_ts": "2026-09-11"}, {"id": "notes", "label": "Program notes", "pct": 30, "due": "2026-09-28", "est_h": 8}, {"id": "rehearsals", "label": "Rehearsal block", "pct": 60, "start": "2026-09-18", "est_h": 30}, {"id": "marketing", "label": "Announce + press", "pct": 0, "kind": "check", "depends_on": ["venue"]}, {"id": "performance", "label": "Performance", "pct": 0, "kind": "check", "due": "2026-10-26"}]}, {"id": "quartet-commission", "title": "Commissioned quartet premiere", "area": "composition", "stage": "active", "due": "2027-02-09", "due_type": "external", "milestones": [{"id": "sketches", "label": "Sketches", "pct": 100, "done_ts": "2026-08-23"}, {"id": "draft", "label": "Draft score", "pct": 45, "est_h": 40}, {"id": "parts", "label": "Parts extracted", "pct": 0, "est_h": 12, "depends_on": ["draft"]}, {"id": "workshop", "label": "Workshop reading", "pct": 0, "kind": "check", "due": "2026-12-01"}, {"id": "revisions", "label": "Revisions", "pct": 0, "depends_on": ["workshop"]}, {"id": "premiere", "label": "Premiere", "pct": 0, "kind": "check", "due": "2027-02-09"}]}, {"id": "residency-app", "title": "Residency application", "area": "income", "stage": "planned", "due": "2027-01-05", "due_type": "external", "milestones": [{"id": "materials", "label": "Materials + recording", "pct": 0, "est_h": 8, "depends_on": ["project:ep-release#master"]}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check"}]}, {"id": "spring-tour", "title": "Spring tour (three cities)", "area": "org", "stage": "idea", "start": "2027-03-01", "due": "2027-04-20", "tentative": true, "milestones": []}, {"id": "staging-next-season", "title": "Opera staging, option B: co-production next season", "area": "composition", "stage": "idea", "start": "2027-06-09", "due": "2027-07-29", "tentative": true, "scenario": "opera-staging", "milestones": []}, {"id": "staging-this-season", "title": "Opera staging, option A: this season", "area": "composition", "stage": "planned", "start": "2026-12-31", "due": "2027-03-01", "tentative": true, "scenario": "opera-staging", "milestones": []}]}</script>
 <script>
-/* horizons.js — Horizons timeline engine: scheduler + renderer + what-if sandbox.
+/* gander_engine.js — the Gander scheduler, pure and importable.
  *
- * Reads the #hz-data JSON island (written by render_horizons.py), derives a
- * schedule for every project/milestone, renders a horizontally-scrollable
- * time axis, and (sandbox mode) lets you drag bars to slip dates — downstream
- * DERIVED dates cascade; explicit dates stay pinned unless dragged themselves.
- * All state is in-memory; "copy scenario" exports a proposal for atlas.py to
- * apply later. There is no write path here by design (decision ≠ execution).
+ * Extracted from gander.js (Jarvis L1, 2026-08-17) so the SAME function runs
+ * in the browser (script tag before gander.js -> window.GanderEngine) and
+ * under `node --test` (module.exports). The WO's no-drift rule is unchanged:
+ * the scheduler lives HERE and only here — no Python twin, and gander.js is
+ * now render + sandbox over this module. No DOM, no globals read, no writes:
+ * schedule(data, offsets, opts) is a pure function of its arguments.
  *
- * The scheduler lives HERE and only here — no Python twin to drift. Python's
- * job is load → strip → embed JSON → template the shell.
+ * Calibration seam (L1): durOf multiplies est_h by cfg.calibration.global
+ * (absent = 1 = nominal, byte-identical to the pre-extraction schedule). An
+ * uncalibrated what-if is fiction with a UI — this seam is where David's
+ * measured estimate-error factor (flightpath/calibration.py over the append-only
+ * estimates ledger) lands. Per-scope factors are an L2 concern.
  */
-(function () {
+(function (root, factory) {
+  "use strict";
+  if (typeof module === "object" && module.exports) module.exports = factory();
+  else root.GanderEngine = factory();
+}(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
-  var raw = document.getElementById("hz-data");
-  if (!raw) return;
-  var DATA = JSON.parse(raw.textContent);
-  var CFG = Object.assign(
-    { focus_h_per_day: 2, default_dur: 7, max_dur: 90 }, DATA.cfg || {});
   var DAY = 86400000;
-  var TODAY = pd(DATA.today);
-  // in-app zoom instead of browser pinch: iOS claims touch gestures for
-  // panning while pinch-zoomed, killing bar drags (David, 07-25)
-  var ZOOMS = [44, 88, 132];    // px per week
-  var zi = 0;
-  try { zi = Math.min(2, parseInt(localStorage.getItem("hz-zoom") || "0", 10) || 0); }
-  catch (e) { zi = 0; }
-  var PXD = ZOOMS[zi] / 7;
+  var DEFAULTS = { focus_h_per_day: 2, default_dur: 7, max_dur: 90 };
 
   // ---- date helpers (integer days since epoch; ISO strings parse as UTC) ----
   function pd(iso) { return Math.round(Date.parse(iso + "T00:00:00Z") / DAY); }
   function iso(d) { return new Date(d * DAY).toISOString().slice(0, 10); }
-  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  function shortD(d) { var t = new Date(d * DAY); return MON[t.getUTCMonth()] + " " + t.getUTCDate(); }
 
-  function durOf(m) {
+  function calFactor(cfg) {
+    // Global factor only in L1. cfg.calibration = {global: 1.6, ...} scales
+    // every est_h-derived duration; absent/1 = the historical nominal engine.
+    return (cfg.calibration && cfg.calibration.global) || 1;
+  }
+
+  function durOf(m, cfg) {
     if (m.est_h) {
-      var d = Math.ceil(m.est_h / CFG.focus_h_per_day);
-      return Math.max(1, Math.min(CFG.max_dur, d));
+      var d = Math.ceil((m.est_h * calFactor(cfg)) / cfg.focus_h_per_day);
+      return Math.max(1, Math.min(cfg.max_dur, d));
     }
-    return CFG.default_dur;
+    return cfg.default_dur;
   }
 
   // ---- scheduler ------------------------------------------------------------
-  // schedule(offsets) -> { byKey: {pid#mid: item}, projects: [proj-view] }
+  // schedule(data, offsets, opts) -> { byKey: {pid#mid: item}, projects: [proj-view] }
   // offsets = { "pid#mid": {ds, dd} } ("pid#__prj" for bare project bars):
   // ds shifts the start, dd shifts the due. Scoot = both, stretch = one side.
+  // opts = { today: int-day (default pd(data.today)), cfg: overrides DEFAULTS }.
   var ZOFF = { ds: 0, dd: 0 };
   function offAt(offsets, key) { return offsets[key] || ZOFF; }
   function toposort(ms) {
@@ -205,9 +214,14 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     return { order: out, cyclic: cyclic };
   }
 
-  function schedule(offsets) {
+  function schedule(data, offsets, opts) {
+    opts = opts || {};
+    var CFG = Object.assign({}, DEFAULTS, opts.cfg || {});
+    var TODAY = opts.today !== undefined ? opts.today : pd(data.today);
+    function dur(m) { return durOf(m, CFG); }
+
     var byKey = {}, views = [];
-    DATA.projects.forEach(function (p) {
+    data.projects.forEach(function (p) {
       var ms = p.milestones || [];
       var view = { p: p, items: [], cyclic: false };
       var off = function (mid) { return offAt(offsets, p.id + "#" + mid); };
@@ -233,16 +247,50 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
         var it = { key: p.id + "#" + m.id, mid: m.id, label: m.label || m.id,
                    s: s + o.ds, d: d + o.dd, pct: m.pct, kind: m.kind || "bar",
                    est_h: m.est_h || null, deps: m.depends_on || [],
-                   derived: !!flags.derived, slipped: false, done: m.pct >= 100 };
+                   derived: !!flags.derived, slipped: false, done: m.pct >= 100,
+                   retired: !!m.retired_ts };
         if (it.s > it.d) it.s = it.d;   // a one-sided stretch can't invert the bar
-        // done items pin to done_ts when present, and never "slip"
-        if (it.done && m.done_ts) {
-          var dd = pd(String(m.done_ts).slice(0, 10));
-          it.d = dd; it.s = Math.min(it.s, dd);
+        // Finished work is never in the future. Pin to done_ts when present;
+        // otherwise clamp the bar to END at today, duration preserved. We do
+        // NOT know when an untimestamped item was done and can't recover it
+        // (the logs never wrote it) — the .derived dotted outline already
+        // carries "this date is ours, not David's". Done items also never
+        // "slip".
+        if (it.done) {
+          if (m.done_ts) {
+            var dd = pd(String(m.done_ts).slice(0, 10));
+            it.d = dd; it.s = Math.min(it.s, dd);
+          } else if (it.d > TODAY) {
+            var dur0 = it.d - it.s + 1;
+            it.d = TODAY; it.s = TODAY - dur0 + 1;
+          }
         }
-        // slip rule: nothing unfinished ends in the past
-        if (!it.done && it.d < TODAY) {
-          it.d = TODAY + Math.ceil(durOf(m) * (1 - (m.pct || 0) / 100));
+        // retired = frozen fragment: the work stopped at retired_ts, so the
+        // bar ends there (same never-in-the-future logic as done-pinning).
+        else if (it.retired) {
+          var rt = pd(String(m.retired_ts).slice(0, 10));
+          it.d = rt; it.s = Math.min(it.s, rt);
+        }
+        // straddle rule: an in-progress item's FINISHED fraction belongs to the
+        // past, so the left-anchored pct fill lands exactly on the today line —
+        // plan and actual read off one geometry. Derived dates only (an explicit
+        // start/due is David's assertion and outranks our estimate), and never
+        // against a sandbox drag, which would snap the bar back under the hand.
+        else if (flags.derived && (m.pct || 0) > 0 && !o.ds && !o.dd) {
+          // Measure the DONE portion backward from today, not the remainder
+          // forward — rounding the remainder up swallows the whole bar at
+          // short durations (30% of 3 days ceil'd back to 3, nothing left of
+          // the line). Cap at dur-1 so an unfinished bar always keeps a day in
+          // the future. Day-granularity means the fill and the line agree to
+          // within a day, not exactly.
+          var dur1 = it.d - it.s + 1;
+          it.s = TODAY - Math.min(dur1 - 1, Math.round(dur1 * m.pct / 100));
+          it.d = it.s + dur1 - 1;
+        }
+        // slip rule: nothing unfinished ends in the past (retired is not
+        // unfinished — it is over)
+        if (!it.done && !it.retired && it.d < TODAY) {
+          it.d = TODAY + Math.ceil(dur(m) * (1 - (m.pct || 0) / 100));
           if (it.s > it.d) it.s = it.d;
           it.slipped = true;
         }
@@ -254,8 +302,8 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
         var s = m.start ? pd(m.start) : null, d = m.due ? pd(m.due) : null;
         if (s === null && d === null) return;
         var derived = false;
-        if (s === null) { s = d - durOf(m) + 1; derived = true; }
-        if (d === null) { d = s + durOf(m) - 1; derived = true; }
+        if (s === null) { s = d - dur(m) + 1; derived = true; }
+        if (d === null) { d = s + dur(m) - 1; derived = true; }
         finalize(m, s, d, { derived: derived });
       });
 
@@ -267,30 +315,46 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
         for (var i = ms.length - 1; i >= 0; i--) {
           var m = ms[i];
           var d = nextS === null ? pd(p.due) : Math.min(pd(p.due), nextS - 1);
-          var s = d - durOf(m) + 1;
+          var s = d - dur(m) + 1;
           var it2 = finalize(m, s, d, { derived: true });
-          nextS = it2.s;
+          // finished/retired work doesn't consume chain space (forward-pack note)
+          if (!it2.done && !it2.retired) nextS = it2.s;
         }
       } else {
         // forward-pack the undated remainder, array order (array order IS the plan)
         var prevD = null;
         ms.forEach(function (m) {
-          if (fin[m.id]) { prevD = fin[m.id].d; return; }
+          if (fin[m.id]) {
+            if (!fin[m.id].done && !fin[m.id].retired) prevD = fin[m.id].d;
+            return;
+          }
           var s = p.start ? pd(p.start) : TODAY;
           (m.depends_on || []).forEach(function (dep) {
             if (dep.indexOf("project:") === 0) return;
             if (fin[dep]) s = Math.max(s, fin[dep].d + 1);
           });
           if (prevD !== null) s = Math.max(s, prevD + 1);
-          var it3 = finalize(m, s, s + durOf(m) - 1, { derived: true });
-          prevD = it3.d;
+          var it3 = finalize(m, s, s + dur(m) - 1, { derived: true });
+          // A finished item doesn't consume future chain space — the work is
+          // already out of the way, so the next item may start today. Without
+          // this, done bars shove real remaining work weeks downstream.
+          // Retired likewise: its remaining scope moved to the successor.
+          if (!it3.done && !it3.retired) prevD = it3.d;
         });
       }
 
       // render in array order regardless of scheduling order
       view.items = ms.map(function (m) { return fin[m.id]; }).filter(Boolean);
       var lo = Infinity, hi = -Infinity;
-      view.items.forEach(function (it) { lo = Math.min(lo, it.s); hi = Math.max(hi, it.d); });
+      view.items.forEach(function (it) {
+        if (it.retired) return;   // fragment shouldn't stretch the envelope
+        lo = Math.min(lo, it.s); hi = Math.max(hi, it.d);
+      });
+      if (lo === Infinity) {      // everything retired: fall back to all items
+        view.items.forEach(function (it) {
+          lo = Math.min(lo, it.s); hi = Math.max(hi, it.d);
+        });
+      }
       if (p.due) hi = Math.max(hi, pd(p.due));
       view.env = [lo, hi];
       views.push(view);
@@ -298,25 +362,46 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     return { byKey: byKey, views: views };
   }
 
-  // ---- global dep graph (for tap-to-highlight, incl. cross-project) --------
-  var EDGES = [];   // [fromKey, toKey]
-  DATA.projects.forEach(function (p) {
-    (p.milestones || []).forEach(function (m) {
-      (m.depends_on || []).forEach(function (dep) {
-        var from = dep.indexOf("project:") === 0
-          ? dep.slice(8).replace("#", "#")            // "pid#mid"
-          : p.id + "#" + dep;
-        if (from.indexOf("#") < 0) from += "#__prj";
-        EDGES.push([from, p.id + "#" + m.id]);
+  // ---- chart membership ------------------------------------------------------
+  // done / dropped / parked projects are not drawn. range(), render() and the
+  // #pid deep link all ask onChart(), so the three can never disagree.
+  var OFF_CHART = ["done", "dropped", "parked"];
+  function onChart(p) { return OFF_CHART.indexOf(p.stage) < 0; }
+
+  // ---- highlight: bar-tap chain vs #pid deep link ---------------------------
+  // depEdges(data) -> [[fromKey, toKey]] for every depends_on, local and
+  // cross-project ("project:pid#mid" -> "pid#mid"; "project:pid" -> "pid#__prj").
+  function depEdges(data) {
+    var edges = [];
+    (data.projects || []).forEach(function (p) {
+      (p.milestones || []).forEach(function (m) {
+        (m.depends_on || []).forEach(function (dep) {
+          var from = dep.indexOf("project:") === 0 ? dep.slice(8) : p.id + "#" + dep;
+          if (from.indexOf("#") < 0) from += "#__prj";
+          edges.push([from, p.id + "#" + m.id]);
+        });
       });
     });
-  });
-  function chainOf(key) {
-    var keep = {}; keep[key] = 1;
+    return edges;
+  }
+  // highlightSet(edges, seed) -> {key: 1} of the rows to light.
+  //   seed a string (a bar tap): that key's whole dependency chain, upstream
+  //     and downstream, across projects.
+  //   seed an array (a #pid deep link): exactly those keys, no closure. A
+  //     project link lights that project, not its cross-project neighbours.
+  //   seed null: nothing.
+  function highlightSet(edges, seed) {
+    var keep = {};
+    if (seed === null || seed === undefined) return keep;
+    if (Array.isArray(seed)) {
+      seed.forEach(function (k) { keep[k] = 1; });
+      return keep;
+    }
+    keep[seed] = 1;
     var grew = true;
     while (grew) {
       grew = false;
-      EDGES.forEach(function (e) {
+      edges.forEach(function (e) {
         if (keep[e[0]] && !keep[e[1]]) { keep[e[1]] = 1; grew = true; }
         if (keep[e[1]] && !keep[e[0]]) { keep[e[0]] = 1; grew = true; }
       });
@@ -324,28 +409,116 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     return keep;
   }
 
+  // ---- deep link: gander.html#<pid> -----------------------------------------
+  // linkTarget(sched, id) -> { pid, area, keys } for the ON-CHART project whose
+  // id equals `id`, else null. sched is schedule()'s result, so keys are the
+  // rows' own item keys by construction ("pid#mid" in array order, "pid#__prj"
+  // for a bare project) and area/stage come from the same lookup. The id comes
+  // from location.hash (untrusted): it is only tested against PID_RE and
+  // compared for equality, never used as an object key or a selector.
+  // PID_RE's 64-char cap matches today.js's PID_RE; flightpath.py ID_RE (which
+  // render_today.py's "gander →" link also uses) is unbounded, so an id over
+  // 64 chars would get a link that lights nothing (longest live id: 21).
+  var PID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
+  function linkTarget(sched, id) {
+    if (typeof id !== "string" || !PID_RE.test(id)) return null;
+    var v = ((sched && sched.views) || []).filter(function (x) { return x.p.id === id; })[0];
+    if (!v || !onChart(v.p)) return null;
+    return { pid: v.p.id, area: v.p.area,
+             keys: v.items.map(function (it) { return it.key; }) };
+  }
+
+  return { DAY: DAY, DEFAULTS: DEFAULTS, pd: pd, iso: iso,
+           durOf: durOf, toposort: toposort, schedule: schedule,
+           OFF_CHART: OFF_CHART, onChart: onChart,
+           depEdges: depEdges, highlightSet: highlightSet,
+           PID_RE: PID_RE, linkTarget: linkTarget };
+}));
+
+/* gander.js — Gander surface: renderer + what-if sandbox.
+ *
+ * Reads the #hz-data JSON island (written by render_gander.py), derives a
+ * schedule for every project/milestone, renders a horizontally-scrollable
+ * time axis, and (sandbox mode) lets you drag bars to slip dates — downstream
+ * DERIVED dates cascade; explicit dates stay pinned unless dragged themselves.
+ * All state is in-memory; "copy scenario" exports a proposal for flightpath.py to
+ * apply later. There is no write path here by design (decision ≠ execution).
+ *
+ * The scheduler was extracted to gander_engine.js (Jarvis L1, 2026-08-17) so
+ * it can run headless under node --test; still JS-only, no Python twin to
+ * drift. This file is DOM: layout, drag, diff sheet. The engine script loads
+ * first (both <script> tags are defer, order preserved; inline build inlines
+ * both in order).
+ */
+(function () {
+  "use strict";
+
+  var HZ = (typeof GanderEngine !== "undefined") ? GanderEngine
+    : (typeof window !== "undefined" ? window.GanderEngine : null);
+  var raw = document.getElementById("hz-data");
+  if (!raw || !HZ) return;
+  var DATA = JSON.parse(raw.textContent);
+  var CFG = Object.assign({}, HZ.DEFAULTS, DATA.cfg || {});
+  var DAY = HZ.DAY;
+  var pd = HZ.pd, iso = HZ.iso;
+  // LOCKSTEP COPY of GANDER_LABELS in flightpath/due_types.py — the
+  // browser cannot import it, so a value added there is added here in
+  // the same PR. An unknown due_type falls through to "" (= external),
+  // matching due_type_of().
+  var DTLABEL = {internal: " (int)", soft: " (soft)", nudge: " (nudge)"};
+  var TODAY = pd(DATA.today);
+  // in-app zoom instead of browser pinch: iOS claims touch gestures for
+  // panning while pinch-zoomed, killing bar drags (David, 07-25)
+  var ZOOMS = [44, 88, 132];    // px per week
+  var zi = 0;
+  try { zi = Math.min(2, parseInt(localStorage.getItem("hz-zoom") || "0", 10) || 0); }
+  catch (e) { zi = 0; }
+  var PXD = ZOOMS[zi] / 7;
+
+  var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function shortD(d) { var t = new Date(d * DAY); return MON[t.getUTCMonth()] + " " + t.getUTCDate(); }
+
+  // scheduler lives in gander_engine.js; this shim keeps every call site
+  // reading exactly as before (schedule(offsets) over the page's DATA/TODAY)
+  var ZOFF = { ds: 0, dd: 0 };   // wireDrag composes deltas onto this shape
+  function schedule(offsets) {
+    return HZ.schedule(DATA, offsets, { today: TODAY, cfg: CFG });
+  }
+
+  // ---- global dep graph (for tap-to-highlight, incl. cross-project) --------
+  // edges and the chain-vs-set decision live in gander_engine.js (node-tested)
+  var EDGES = HZ.depEdges(DATA);   // [fromKey, toKey]
+
   function depUnmet(dep, p) {
+    // retired targets read satisfied — the successor carries the scope
+    function live(mm) { return !mm.retired_ts; }
     if (dep.indexOf("project:") === 0) {
       var ref = dep.slice(8), pid = ref.split("#")[0], mid = ref.split("#")[1];
       var tp = DATA.projects.filter(function (x) { return x.id === pid; })[0];
       if (!tp) return false;
-      if (!mid) return (tp.milestones || []).some(function (mm) { return mm.pct < 100; });
+      if (!mid) return (tp.milestones || []).some(function (mm) { return live(mm) && mm.pct < 100; });
       var tm = (tp.milestones || []).filter(function (mm) { return mm.id === mid; })[0];
-      return tm ? tm.pct < 100 : false;
+      return tm ? live(tm) && tm.pct < 100 : false;
     }
     var lm = (p.milestones || []).filter(function (mm) { return mm.id === dep; })[0];
-    return lm ? lm.pct < 100 : false;
+    return lm ? live(lm) && lm.pct < 100 : false;
   }
 
   // ---- state ---------------------------------------------------------------
   var offsets = {};             // committed what-if deltas
   var undoStack = [];
   var sandbox = !!DATA.demo;    // live default OFF, demo default ON
-  var highlighted = null;
+  var highlighted = null;       // a bar key (tap: its chain) or a key list (#pid: those rows)
   var BASE = schedule({});      // baseline never changes
   var collapsed = {};
   try { collapsed = JSON.parse(localStorage.getItem("hz-collapse") || "{}"); }
   catch (e) { collapsed = {}; }
+  var areaCollapsed = {};
+  try { areaCollapsed = JSON.parse(localStorage.getItem("hz-area-collapse") || "{}"); }
+  catch (e) { areaCollapsed = {}; }
+  // #pid deep link: view-only unfold of the linked project and its area.
+  // Never written to localStorage; the fold taps own that.
+  var linkArea = null, linkPid = null;
 
   // ---- layout --------------------------------------------------------------
   var app = document.getElementById("hz-app");
@@ -355,7 +528,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
   function range(sched) {
     var lo = TODAY - 14, hi = TODAY + 183;
     sched.views.forEach(function (v) {
-      if (v.p.stage === "done" || v.p.stage === "dropped") return;
+      if (!HZ.onChart(v.p)) return;
       lo = Math.min(lo, v.env[0]); hi = Math.max(hi, v.env[1] + 14);
     });
     // clamp to a 12-month window around today
@@ -431,30 +604,71 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
     // areas → projects → item rows
     var byArea = {};
     sched.views.forEach(function (v) {
-      if (v.p.stage === "done" || v.p.stage === "dropped") return;
+      if (!HZ.onChart(v.p)) return;
       (byArea[v.p.area] = byArea[v.p.area] || []).push(v);
     });
     DATA.areas.forEach(function (a) {
       var vs = byArea[a.id];
       if (!vs || !vs.length) return;
-      var h = el("div", "hzrow hzarearow");
+      var aclps = !!areaCollapsed[a.id] && a.id !== linkArea;
+      var h = el("div", "hzrow hzarearow" + (aclps ? " clps" : ""));
       var hg = el("div", "hzgut hzarea", a.label);
       hg.style.color = a.color;
+      hg.addEventListener("click", function () {
+        // toggle what is SHOWN: an area the link opened folds on the first tap
+        if (aclps) delete areaCollapsed[a.id]; else areaCollapsed[a.id] = 1;
+        if (linkArea === a.id) linkArea = null;
+        try { localStorage.setItem("hz-area-collapse", JSON.stringify(areaCollapsed)); }
+        catch (e) {}
+        render();
+      });
       h.appendChild(hg);
-      h.appendChild(el("div", "hzlane"));
+      var hl = el("div", "hzlane");
+      if (aclps) {
+        // collapsing hides the whole area — surface its span, headcount and
+        // nearest deadline on the header row (same convention as the project
+        // rows' "gated elsewhere" chip: never let a fold hide a live date)
+        hl.style.width = chartW + "px";
+        var alo = Infinity, ahi = -Infinity, nd = null;
+        vs.forEach(function (v) {
+          alo = Math.min(alo, v.env[0]); ahi = Math.max(ahi, v.env[1]);
+          if (v.p.due) { var pdd = pd(v.p.due); if (nd === null || pdd < nd) nd = pdd; }
+        });
+        var aenv = el("div", "hzenv");
+        aenv.style.left = ((alo - t0) * PXD) + "px";
+        aenv.style.width = Math.max(2, (ahi - alo + 1) * PXD) + "px";
+        aenv.style.background = a.color;
+        hl.appendChild(aenv);
+        if (nd !== null) {
+          var adia = el("div", "hzdia", "◆");
+          adia.style.left = ((nd - t0) * PXD - 5) + "px";
+          adia.title = "nearest due " + iso(nd);
+          if (nd < TODAY) adia.classList.add("over");
+          else if (nd - TODAY <= 7) adia.classList.add("soon");
+          hl.appendChild(adia);
+        }
+        var achip = el("div", "hzlchip area", vs.length + " project" +
+          (vs.length > 1 ? "s" : "") + (nd !== null ? " · next due " + iso(nd) : ""));
+        achip.style.left = ((ahi - t0 + 2) * PXD) + "px";
+        hl.appendChild(achip);
+      }
+      h.appendChild(hl);
       inner.appendChild(h);
+      if (aclps) return;   // project + item rows hidden — header row is the aggregate
 
       vs.forEach(function (v) {
         var p = v.p;
         var tent = p.tentative || p.scenario;
 
         // project header row: envelope line + due diamond
-        var clps = !!collapsed[p.id];
+        var clps = !!collapsed[p.id] && p.id !== linkPid;
         var pr = el("div", "hzrow hzprjrow" + (tent ? " tent" : "") + (clps ? " clps" : ""));
+        pr.dataset.pid = p.id;   // the #pid deep link finds its row by this
         var pg = el("div", "hzgut hzprj");
         pg.appendChild(el("span", "hzptitle", p.title));
         pg.addEventListener("click", function () {
-          if (collapsed[p.id]) delete collapsed[p.id]; else collapsed[p.id] = 1;
+          if (clps) delete collapsed[p.id]; else collapsed[p.id] = 1;
+          if (linkPid === p.id) linkPid = null;
           try { localStorage.setItem("hz-collapse", JSON.stringify(collapsed)); }
           catch (e) {}
           render();
@@ -490,8 +704,8 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
           var dd = pd(p.due);
           var dia = el("div", "hzdia", "◆");
           dia.style.left = ((dd - t0) * PXD - 5) + "px";
-          dia.title = "due " + p.due + (p.due_type === "internal" ? " (int)" : "");
-          // same severity semantics as atlas due_class; internal never softer
+          dia.title = "due " + p.due + (DTLABEL[p.due_type] || "");
+          // same severity semantics as flightpath due_class; internal never softer
           if (dd < TODAY) dia.classList.add("over");
           else if (dd - TODAY <= 7) dia.classList.add("soon");
           pl.appendChild(dia);
@@ -519,7 +733,9 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
           }
 
           if (it.kind === "check") {
-            var ck = el("div", "hzcheck" + (it.done ? " done" : ""), it.done ? "✓" : "◇");
+            var ck = el("div", "hzcheck" + (it.done ? " done" : "") +
+              (it.retired ? " retired" : ""),
+              it.done ? "✓" : (it.retired ? "⊘" : "◇"));
             ck.style.left = ((it.d - t0) * PXD - 6) + "px";
             ck.dataset.key = it.key;
             if (it.derived) ck.classList.add("derived");
@@ -528,7 +744,8 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
             var b = el("div", "hzbar" +
               (it.derived ? " derived" : "") +
               (it.slipped ? " slipped" : "") +
-              (it.done ? " done" : ""));
+              (it.done ? " done" : "") +
+              (it.retired ? " retired" : ""));
             b.style.left = ((it.s - t0) * PXD) + "px";
             b.style.width = Math.max(6, (it.d - it.s + 1) * PXD) + "px";
             b.style.background = "rgba(255,255,255,.07)";
@@ -541,11 +758,11 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
             } else {
               b.style.background = a.color; b.classList.add("bare");
             }
-            // unmet dep → dashed red outline (same semantic as atlas .dep)
+            // unmet dep → dashed red outline (same semantic as flightpath .dep)
             var blocked = (it.deps || []).some(function (dep) { return depUnmet(dep, p); });
-            if (blocked && !it.done) b.classList.add("depblock");
+            if (blocked && !it.done && !it.retired) b.classList.add("depblock");
             // visible stretch grips (sandbox-only via CSS) on three-zone bars
-            if ((it.d - it.s + 1) * PXD >= 44 && !it.done) {
+            if ((it.d - it.s + 1) * PXD >= 44 && !it.done && !it.retired) {
               b.appendChild(el("span", "hzgrip l"));
               b.appendChild(el("span", "hzgrip r"));
             }
@@ -584,7 +801,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
       rows.forEach(function (r) { r.classList.remove("hl", "dimmed"); });
       return;
     }
-    var keep = chainOf(highlighted);
+    var keep = HZ.highlightSet(EDGES, highlighted);
     rows.forEach(function (r) {
       var on = !!keep[r.dataset.key];
       r.classList.toggle("hl", on);
@@ -657,7 +874,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
         " (was " + c.from.start + " .. " + c.from.due + ")" + dur;
     });
     var payload = {
-      horizons_proposal: {
+      gander_proposal: {
         generated: DATA.today,
         changes: diff.map(function (c) {
           var x = { project: c.project, milestone: c.milestone, from: c.from,
@@ -688,7 +905,7 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
 
   function wireDrag(scroll, sched, t0) {
     scroll.querySelectorAll(".hzbar[data-key], .hzcheck[data-key]").forEach(function (b) {
-      if (b.classList.contains("ghost")) return;
+      if (b.classList.contains("ghost") || b.classList.contains("retired")) return;
       // zones (David's 10/70/20 intent, phone-safe): edge = max(14px, 20% of
       // width) each side; bars too narrow for three zones scoot whole.
       function zoneAt(ev2) {
@@ -805,7 +1022,8 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
       pill.className = "hzpill" + (sandbox ? " on" : "");
       pill.textContent = "sandbox: " + (sandbox ? "on" : "off");
       document.body.classList.toggle("sandbox", sandbox);
-      if (!sandbox) { highlighted = null; applyHighlight(); }
+      // off clears a tap's chain; a #pid link's rows stay lit while the URL names them
+      if (!sandbox && !Array.isArray(highlighted)) { highlighted = null; applyHighlight(); }
     };
     bar.appendChild(pill);
     if (DATA.demo)
@@ -816,9 +1034,41 @@ border-radius:6px;padding:3px 8px;pointer-events:none;white-space:nowrap}
         "sandbox on: middle = slip, edges = stretch · tap a bar to trace its dependency chain"));
   }
 
+  // ---- deep link: gander.html#<pid> (the today page's "gander →") ----------
+  // The hash is untrusted: HZ.linkTarget pattern-tests it and compares it for
+  // equality with the schedule's on-chart project ids; here it is only compared
+  // with the dataset.pid render() wrote. Never a selector, never written to the
+  // DOM, never rewritten. It seeds `highlighted` with the project's own keys (a
+  // set, not a chain), so a later tap replaces it and a second tap clears it.
+  function takeHash() {
+    // hash -> view state, no DOM; true when the fold override moved
+    var t = HZ.linkTarget(BASE, location.hash.slice(1));
+    var area = t ? t.area : null, pid = t ? t.pid : null;
+    var moved = area !== linkArea || pid !== linkPid;
+    linkArea = area; linkPid = pid;
+    highlighted = t ? t.keys : null;
+    return moved;
+  }
+  function centreLink() {
+    if (!linkPid) return;
+    var row = null;
+    app.querySelectorAll(".hzprjrow").forEach(function (r) {
+      if (r.dataset.pid === linkPid) row = r;
+    });
+    if (row) row.scrollIntoView({ block: "center" });
+    else { highlighted = null; applyHighlight(); }   // not drawn: light nothing
+  }
+
   var GUT = 148;
   renderBar();
+  takeHash();      // before the first render, so a folded target opens in one pass
   render();
+  centreLink();
+  window.addEventListener("hashchange", function () {
+    // the new hash replaces the old link outright; unknown / off-chart clears it
+    if (takeHash()) render(); else applyHighlight();
+    centreLink();
+  });
 })();
 
 </script>
