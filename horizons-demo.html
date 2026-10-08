@@ -1155,9 +1155,26 @@ margin:-10px 0 6px;padding:10px 0 4px}
   var island = document.getElementById("hz-deps-data");
   if (!app || !sheet || !island) return;
   var DEPS = JSON.parse(island.textContent);
+  var board = document.getElementById("hz-data");
+  var boardToday = board ? JSON.parse(board.textContent).today : null;
 
+  // a critical path is only true for the snapshot it was computed from: when
+  // the two islands disagree, draw no gold and no slack table, and say why
   var crit = {};
-  DEPS.critical.forEach(function (k) { crit[k] = 1; });
+  if (DEPS.today === boardToday) {
+    DEPS.critical.forEach(function (k) { crit[k] = 1; });
+  } else {
+    var dp = document.getElementById("hz-deps");
+    var lg = document.querySelector(".legend .lgcrit");
+    if (lg) lg.parentNode.hidden = true;
+    if (dp) {
+      var why = el("div", "hzdeps");
+      why.appendChild(el("div", "caveat", "Critical path and slack not shown: that data is " +
+        "from a different snapshot (" + DEPS.today + ") than this timeline (" + boardToday + ")."));
+      dp.parentNode.insertBefore(why, dp);
+      dp.hidden = true;
+    }
+  }
   function mark() {
     app.querySelectorAll(".hzitrow").forEach(function (r) {
       r.classList.toggle("crit", !!crit[r.dataset.key]);
