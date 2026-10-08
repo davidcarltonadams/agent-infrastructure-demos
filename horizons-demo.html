@@ -1206,6 +1206,11 @@ margin:-10px 0 6px;padding:10px 0 4px}
     return e;
   }
   function signed(n) { return (n > 0 ? "+" : "") + n + "d"; }
+  // a bar for a project with no milestones carries the engine key "pid#__prj";
+  // the card names it as the whole project instead
+  function what(c) {
+    return c.milestone === "__prj" ? c.project + " (whole project)" : c.project + "#" + c.milestone;
+  }
 
   function cardFrom(text) {
     var cut = text.indexOf("\n\n{");
@@ -1220,11 +1225,11 @@ margin:-10px 0 6px;padding:10px 0 4px}
     var id = ("gander-" + prop.generated.replace(/-/g, "") + "-" + lead[0].project)
       .slice(0, 64).replace(/-+$/, "");
     var tldr = "Gander scenario: " + lead.map(function (c) {
-      return c.project + "#" + c.milestone + " " + signed(c.delta_days);
+      return what(c) + " " + signed(c.delta_days);
     }).join(", ") + (casc ? " (" + casc + " derived date" + (casc > 1 ? "s" : "") +
       " follow)" : "") + ". Apply it?";
     if (tldr.length > 300) tldr = tldr.slice(0, 299) + "…";   // add_card: tldr <= 300
-    var detail = text.slice(text.indexOf("\n") + 1, cut);
+    var detail = text.slice(text.indexOf("\n") + 1, cut).replace(/#__prj:/g, " (whole project):");
     if (detail.length > 6000) detail = detail.slice(0, 5999) + "…"; // detail <= 6000
     return {
       id: id, created: prop.generated, source: "gander sandbox",
