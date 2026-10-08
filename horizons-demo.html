@@ -156,7 +156,36 @@ white-space:nowrap}
 .hzdeps .dim{color:var(--dim)}.hzdeps .red{color:var(--red)}.hzdeps .amber{color:var(--amber)}
 .hzdeps .src{color:var(--dim);font-size:11.5px;margin:6px 0 0}
 @media (max-width:560px){.hzdeps table{font-size:12px}.hzdeps th,.hzdeps td{padding-right:8px}}
-
+/* card preview: docket card markup; docket.py's own rules, scoped under .dk,
+   are pasted after these */
+#hz-sheet .dk{margin:12px 0 4px;max-width:680px;color:#e8e0d0;
+font:15px/1.55 -apple-system,sans-serif}
+#hz-sheet .dk .dkhd{font:11.5px ui-monospace,'SF Mono',Menlo,monospace;color:var(--gold);
+margin:0 0 6px}
+/* the card makes the sheet scroll; keep undo / reset / copy in reach */
+#hz-sheet .hzsheethead{position:sticky;top:-10px;z-index:1;background:var(--panel);
+margin:-10px 0 6px;padding:10px 0 4px}
+#hz-sheet .dk .dknote{font-size:12px;color:var(--dim);margin:0;line-height:1.45}
+#hz-sheet .dk .card button{cursor:default}
+#hz-sheet .dk .card{background:#1d1915;border:1px solid #332c23;border-radius:10px;padding:14px 16px;margin:0 0 14px}
+#hz-sheet .dk .card.decided{opacity:.75;border-style:dashed}
+#hz-sheet .dk .card.flagged{border-color:#d06a55;border-left:3px solid #d06a55}
+#hz-sheet .dk .flag{color:#d06a55}
+#hz-sheet .dk .recur{color:#7fb0a8}
+#hz-sheet .dk .tldr{font-size:16px;font-weight:600;margin:0 0 2px}
+#hz-sheet .dk .meta{font:11px ui-monospace,Menlo,monospace;color:#9a8f7d;margin-bottom:10px}
+#hz-sheet .dk .meta .due{color:#d06a55}
+#hz-sheet .dk details{margin:8px 0 10px}
+#hz-sheet .dk summary{cursor:pointer;font-size:13px;color:#d4a24e;user-select:none}
+#hz-sheet .dk .detail{white-space:pre-wrap;font-size:14px;color:#c9bfae;border-left:2px solid #332c23;padding:8px 0 8px 12px;margin-top:8px}
+#hz-sheet .dk .applynote{font-size:12px;color:#9a8f7d;font-style:italic;margin-top:6px}
+#hz-sheet .dk .opts{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+#hz-sheet .dk button{font:600 13px -apple-system,sans-serif;padding:9px 14px;border:none;border-radius:7px;cursor:pointer}
+#hz-sheet .dk .opt{background:#d4a24e;color:#14110e}
+#hz-sheet .dk .punt{background:#2a241d;color:#9a8f7d;border:1px solid #332c23;font-weight:500}
+#hz-sheet .dk .done{background:transparent;color:#7fb0a8;border:1px solid #7fb0a8;font-weight:600}
+#hz-sheet .dk .msg{font-size:13px;min-height:18px;margin-top:6px}
+#hz-sheet .dk .discussbadge{font:11px ui-monospace,Menlo,monospace;color:#9a8f7d}
 </style></head><body>
 <div class="hd">
 <h1>gander</h1>
@@ -1113,6 +1142,9 @@ white-space:nowrap}
  * their output and adds two things:
  *  1. critical path: the keys in #hz-deps-data come from render_deps.py run on
  *     this page's store; every render() of the timeline gets them re-marked.
+ *  2. card preview: when "copy scenario" hands gander.js's proposal text to
+ *     the clipboard, the same text is turned into the Docket card it would
+ *     become, in docket.py's card markup. Nothing is sent anywhere.
  */
 (function () {
   "use strict";
@@ -1136,6 +1168,112 @@ white-space:nowrap}
   var panel = document.getElementById("hz-deps");
   if (panel && window.innerWidth >= 980 && window.innerHeight >= 700) panel.open = true;
 
+  // ---- scenario -> Docket card (docket.py add_card fields, _card_html markup)
+  function el(tag, cls, txt) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (txt !== undefined) e.textContent = txt;
+    return e;
+  }
+  function signed(n) { return (n > 0 ? "+" : "") + n + "d"; }
+
+  function cardFrom(text) {
+    var cut = text.indexOf("\n\n{");
+    if (text.indexOf("Gander scenario (") !== 0 || cut < 0) return null;
+    var prop = JSON.parse(text.slice(cut + 2)).gander_proposal;
+    var ch = (prop && prop.changes) || [];
+    if (!ch.length) return null;
+    var direct = ch.filter(function (c) { return !c.cascade; });
+    var casc = ch.length - direct.length;
+    var lead = direct.length ? direct : ch;
+    // docket.py ID_RE ^[a-z0-9][a-z0-9-]*$, ID_MAX 64; project ids already fit
+    var id = ("gander-" + prop.generated.replace(/-/g, "") + "-" + lead[0].project)
+      .slice(0, 64).replace(/-+$/, "");
+    var tldr = "Gander scenario: " + lead.map(function (c) {
+      return c.project + "#" + c.milestone + " " + signed(c.delta_days);
+    }).join(", ") + (casc ? " (" + casc + " derived date" + (casc > 1 ? "s" : "") +
+      " follow)" : "") + ". Apply it?";
+    if (tldr.length > 300) tldr = tldr.slice(0, 299) + "…";   // add_card: tldr <= 300
+    var detail = text.slice(text.indexOf("\n") + 1, cut);
+    if (detail.length > 6000) detail = detail.slice(0, 5999) + "…"; // detail <= 6000
+    return {
+      id: id, created: prop.generated, source: "gander sandbox",
+      tldr: tldr, detail: detail, kind: "choice",
+      options: ["apply as proposed", "keep the current plan"],
+      effort: "S", due: null, weight: 2, flag: false, status: "open",
+      wake_date: null, decision: null,
+      apply_note: "a session writes the dragged dates with the Flightpath CLI; " +
+        "derived dates recompute from them",
+      lane: "misc", recur_days: null, decide_effort: "glance"
+    };
+  }
+
+  // docket.py _card_html(card) for an open, unflagged card, built as DOM
+  function cardEl(c) {
+    var root = el("div", "card");
+    root.id = "c-" + c.id;
+    root.appendChild(el("div", "tldr", c.tldr));
+    root.appendChild(el("div", "meta", "effort " + c.effort + " · w" + c.weight));
+    if (c.detail) {
+      var det = el("details");
+      det.appendChild(el("summary", null, "context"));
+      det.appendChild(el("div", "detail", c.detail));
+      if (c.apply_note) det.appendChild(el("div", "applynote", "on decision: " + c.apply_note));
+      root.appendChild(det);
+    }
+    function btn(cls, action, label, attr, val) {
+      var b = el("button", cls, label);
+      b.setAttribute("data-card", c.id);
+      b.setAttribute("data-action", action);
+      if (attr) b.setAttribute(attr, val);
+      return b;
+    }
+    var o1 = el("div", "opts");
+    c.options.forEach(function (o) { o1.appendChild(btn("opt", "choose", o, "data-value", o)); });
+    root.appendChild(o1);
+    var o2 = el("div", "opts");
+    [["punt 1d", 1], ["punt 3d", 3], ["punt 1wk", 7]].forEach(function (p) {
+      o2.appendChild(btn("punt", "punt", p[0], "data-days", String(p[1])));
+    });
+    o2.appendChild(btn("punt", "discuss", "🗣 discuss"));
+    o2.appendChild(btn("punt", "backburner", "backburner"));
+    o2.appendChild(btn("done", "done", "☐ done"));
+    root.appendChild(o2);
+    root.appendChild(el("div", "msg"));
+    return root;
+  }
+
+  function showCard(text) {
+    var c = cardFrom(text);
+    var old = sheet.querySelector(".dk");
+    if (old) old.parentNode.removeChild(old);
+    if (!c) return;
+    var wrap = el("div", "dk");
+    wrap.appendChild(el("div", "dkhd", "→ the Docket card this scenario would file:"));
+    wrap.appendChild(cardEl(c));
+    wrap.appendChild(el("p", "dknote",
+      "Nothing is filed from this page, and these buttons do nothing. In the real " +
+      "queue this card is the decision gate: picking an option records the decision, " +
+      "and a session applies it afterwards."));
+    sheet.appendChild(wrap);
+    var hd = sheet.querySelector(".hzsheethead");
+    sheet.scrollTop = wrap.offsetTop - (hd ? hd.offsetHeight : 0) - 6;
+  }
+
+  // gander.js copies with navigator.clipboard.writeText, falling back to a
+  // hidden textarea + execCommand("copy"); both routes pass through here.
+  var cb = navigator.clipboard;
+  if (cb && cb.writeText) {
+    var write = cb.writeText.bind(cb);
+    cb.writeText = function (t) {
+      try { showCard(String(t)); } catch (e) {}
+      return write(t);
+    };
+  }
+  document.addEventListener("copy", function (e) {
+    var t = e.target && e.target.tagName === "TEXTAREA" ? e.target.value : "";
+    if (t.indexOf("Gander scenario (") === 0) { try { showCard(t); } catch (err) {} }
+  }, true);
 })();
 </script>
 </body></html>
