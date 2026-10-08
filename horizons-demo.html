@@ -204,18 +204,18 @@ margin:-10px 0 6px;padding:10px 0 4px}
 <script>
 /* gander_engine.js — the Gander scheduler, pure and importable.
  *
- * Extracted from gander.js (Jarvis L1, 2026-08-17) so the SAME function runs
+ * Extracted from gander.js so the SAME function runs
  * in the browser (script tag before gander.js -> window.GanderEngine) and
- * under `node --test` (module.exports). The WO's no-drift rule is unchanged:
+ * under `node --test` (module.exports). The no-drift rule is unchanged:
  * the scheduler lives HERE and only here — no Python twin, and gander.js is
  * now render + sandbox over this module. No DOM, no globals read, no writes:
  * schedule(data, offsets, opts) is a pure function of its arguments.
  *
- * Calibration seam (L1): durOf multiplies est_h by cfg.calibration.global
+ * Calibration seam: durOf multiplies est_h by cfg.calibration.global
  * (absent = 1 = nominal, byte-identical to the pre-extraction schedule). An
- * uncalibrated what-if is fiction with a UI — this seam is where David's
- * measured estimate-error factor (flightpath/calibration.py over the append-only
- * estimates ledger) lands. Per-scope factors are an L2 concern.
+ * uncalibrated what-if is fiction with a UI — this seam is where a measured
+ * estimate-error factor, computed server-side from an append-only estimates
+ * ledger, lands. Per-scope factors are future work.
  */
 (function (root, factory) {
   "use strict";
@@ -232,7 +232,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
   function iso(d) { return new Date(d * DAY).toISOString().slice(0, 10); }
 
   function calFactor(cfg) {
-    // Global factor only in L1. cfg.calibration = {global: 1.6, ...} scales
+    // Global factor only, for now. cfg.calibration = {global: 1.6, ...} scales
     // every est_h-derived duration; absent/1 = the historical nominal engine.
     return (cfg.calibration && cfg.calibration.global) || 1;
   }
@@ -317,7 +317,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
         // otherwise clamp the bar to END at today, duration preserved. We do
         // NOT know when an untimestamped item was done and can't recover it
         // (the logs never wrote it) — the .derived dotted outline already
-        // carries "this date is ours, not David's". Done items also never
+        // carries "this date is ours, not the user's". Done items also never
         // "slip".
         if (it.done) {
           if (m.done_ts) {
@@ -337,7 +337,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
         // straddle rule: an in-progress item's FINISHED fraction belongs to the
         // past, so the left-anchored pct fill lands exactly on the today line —
         // plan and actual read off one geometry. Derived dates only (an explicit
-        // start/due is David's assertion and outranks our estimate), and never
+        // start/due is the user's assertion and outranks our estimate), and never
         // against a sandbox drag, which would snap the bar back under the hand.
         else if (flags.derived && (m.pct || 0) > 0 && !o.ds && !o.dd) {
           // Measure the DONE portion backward from today, not the remainder
@@ -479,9 +479,9 @@ margin:-10px 0 6px;padding:10px 0 4px}
   // for a bare project) and area/stage come from the same lookup. The id comes
   // from location.hash (untrusted): it is only tested against PID_RE and
   // compared for equality, never used as an object key or a selector.
-  // PID_RE's 64-char cap matches today.js's PID_RE; flightpath.py ID_RE (which
-  // render_today.py's "gander →" link also uses) is unbounded, so an id over
-  // 64 chars would get a link that lights nothing (longest live id: 21).
+  // PID_RE's 64-char cap matches the today page's own id check; the server's
+  // project-id pattern is unbounded, so an id over 64 chars would get a link
+  // that lights nothing.
   var PID_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
   function linkTarget(sched, id) {
     if (typeof id !== "string" || !PID_RE.test(id)) return null;
@@ -504,10 +504,10 @@ margin:-10px 0 6px;padding:10px 0 4px}
  * schedule for every project/milestone, renders a horizontally-scrollable
  * time axis, and (sandbox mode) lets you drag bars to slip dates — downstream
  * DERIVED dates cascade; explicit dates stay pinned unless dragged themselves.
- * All state is in-memory; "copy scenario" exports a proposal for flightpath.py to
- * apply later. There is no write path here by design (decision ≠ execution).
+ * All state is in-memory; "copy scenario" exports a proposal for the Flightpath
+ * CLI to apply later. There is no write path here by design (decision ≠ execution).
  *
- * The scheduler was extracted to gander_engine.js (Jarvis L1, 2026-08-17) so
+ * The scheduler was extracted to gander_engine.js so
  * it can run headless under node --test; still JS-only, no Python twin to
  * drift. This file is DOM: layout, drag, diff sheet. The engine script loads
  * first (both <script> tags are defer, order preserved; inline build inlines
@@ -524,14 +524,14 @@ margin:-10px 0 6px;padding:10px 0 4px}
   var CFG = Object.assign({}, HZ.DEFAULTS, DATA.cfg || {});
   var DAY = HZ.DAY;
   var pd = HZ.pd, iso = HZ.iso;
-  // LOCKSTEP COPY of GANDER_LABELS in flightpath/due_types.py — the
-  // browser cannot import it, so a value added there is added here in
-  // the same PR. An unknown due_type falls through to "" (= external),
-  // matching due_type_of().
+  // LOCKSTEP COPY of the server's due-type labels — the browser cannot
+  // import them, so a value added there is added here in the same
+  // change. An unknown due_type falls through to "" (= external), as it
+  // does on the server.
   var DTLABEL = {internal: " (int)", soft: " (soft)", nudge: " (nudge)"};
   var TODAY = pd(DATA.today);
   // in-app zoom instead of browser pinch: iOS claims touch gestures for
-  // panning while pinch-zoomed, killing bar drags (David, 07-25)
+  // panning while pinch-zoomed, killing bar drags
   var ZOOMS = [44, 88, 132];    // px per week
   var zi = 0;
   try { zi = Math.min(2, parseInt(localStorage.getItem("hz-zoom") || "0", 10) || 0); }
@@ -623,7 +623,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
     // grid layer: month lines + today line (behind rows, offset past gutter)
     var grid = el("div", "hzgridlayer");
     grid.style.left = GUT + "px"; grid.style.width = chartW + "px";
-    // finer axis at higher zoom so edits aren't flying blind (David, 07-25):
+    // finer axis at higher zoom so edits aren't flying blind:
     // x1 = month starts; x2 adds the 15th; x3 adds the 10th + 20th
     var subDays = zi === 0 ? [] : (zi === 1 ? [15] : [10, 20]);
     var d = t0;
@@ -969,7 +969,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
   function wireDrag(scroll, sched, t0) {
     scroll.querySelectorAll(".hzbar[data-key], .hzcheck[data-key]").forEach(function (b) {
       if (b.classList.contains("ghost") || b.classList.contains("retired")) return;
-      // zones (David's 10/70/20 intent, phone-safe): edge = max(14px, 20% of
+      // zones (10/70/20 split, phone-safe): edge = max(14px, 20% of
       // width) each side; bars too narrow for three zones scoot whole.
       function zoneAt(ev2) {
         if (b.classList.contains("hzcheck")) return "move";   // single-date glyph
@@ -998,7 +998,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
         function move(e2) {
           var dx = e2.clientX - startX;
           // any real movement (either axis) disqualifies the gesture as a tap —
-          // otherwise a scroll/aborted drag toggles the highlight (David, 07-25)
+          // otherwise a scroll/aborted drag toggles the highlight
           if (Math.abs(dx) > 6 || Math.abs(e2.clientY - startY) > 6) moved = true;
           if (!dragging && sandbox && Math.abs(dx) > 6) {
             dragging = true;
@@ -1138,9 +1138,10 @@ margin:-10px 0 6px;padding:10px 0 4px}
 <script type="application/json" id="hz-deps-data">{"source": "render_deps.py", "today": "2026-10-02", "critical": ["arts-council-grant#narrative", "arts-council-grant#budget", "arts-council-grant#samples", "residency-app#materials", "fall-concert#rehearsals", "ep-release#tracking", "ep-release#mix", "ep-release#master", "quartet-commission#draft", "quartet-commission#parts", "booking-system#model", "booking-system#pilot"]}</script>
 <script>
 /* demo layer (horizons-demo.html only). gander_engine.js and gander.js above
- * are the real files, inlined by render_gander.py; one line differs on this
- * page: gander.js's clipboard fallback focuses its textarea before selecting
- * it, so the copy event lands on the textarea in every browser. This script
+ * are the real files, inlined by render_gander.py. On this public page their
+ * comments are trimmed of internal references, and one line of code differs:
+ * gander.js's clipboard fallback focuses its textarea before selecting it,
+ * so the copy event lands on the textarea in every browser. This script
  * reads their output and adds two things:
  *  1. critical path: the keys in #hz-deps-data come from render_deps.py run on
  *     this page's store; every render() of the timeline gets them re-marked.
