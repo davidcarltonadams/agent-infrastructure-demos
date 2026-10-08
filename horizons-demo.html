@@ -1183,9 +1183,10 @@ margin:-10px 0 6px;padding:10px 0 4px}
   new MutationObserver(mark).observe(app, { childList: true });
   mark();
 
-  // the deps panel starts open where the screen has room for it
+  // the deps panel starts open where the screen has room for it: open, it
+  // takes ~175px of header height, so shorter windows start it collapsed
   var panel = document.getElementById("hz-deps");
-  if (panel && window.innerWidth >= 980 && window.innerHeight >= 700) panel.open = true;
+  if (panel && window.innerWidth >= 980 && window.innerHeight >= 820) panel.open = true;
 
   // ---- scenario -> Docket card (docket.py add_card fields, _card_html markup)
   function el(tag, cls, txt) {
