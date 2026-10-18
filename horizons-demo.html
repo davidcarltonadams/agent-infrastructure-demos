@@ -877,6 +877,11 @@ margin:-10px 0 6px;padding:10px 0 4px}
   }
 
   // ---- diff sheet + proposal export ----------------------------------------
+  // a project with no milestones is one bar keyed "pid#__prj"; the sheet names
+  // it as the whole project (the export keeps the key for the CLI)
+  function sheetName(c) {
+    return c.milestone === "__prj" ? c.project + " (whole project)" : c.project + "#" + c.milestone;
+  }
   function computeDiff(sched) {
     var out = [];
     Object.keys(sched.byKey).forEach(function (k) {
@@ -922,7 +927,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
       var dur = c.duration_days
         ? " · dur " + c.duration_days.from + "→" + c.duration_days.to + "d" : "";
       sheet.appendChild(el("div", "hzdl" + (c.direct ? "" : " casc"),
-        (c.direct ? "" : "↳ ") + c.project + "#" + c.milestone + ": " +
+        (c.direct ? "" : "↳ ") + sheetName(c) + ": " +
         sign + c.delta_days + "d → due " + c.to.due + " (was " + c.from.due + ")" + dur));
     });
     if (diff.length > 12)
@@ -1143,9 +1148,11 @@ margin:-10px 0 6px;padding:10px 0 4px}
 <script>
 /* demo layer (horizons-demo.html only). gander_engine.js and gander.js above
  * are the real files, inlined by render_gander.py. On this public page their
- * comments are trimmed of internal references, and one line of code differs:
- * gander.js's clipboard fallback focuses its textarea before selecting it,
- * so the copy event lands on the textarea in every browser. This script
+ * comments are trimmed of internal references, and two things in gander.js
+ * differ: its clipboard fallback focuses its textarea before selecting it,
+ * so the copy event lands on the textarea in every browser, and its scenario
+ * sheet names a project with no milestones as "(whole project)" instead of
+ * printing the internal key. This script
  * reads their output and adds two things:
  *  1. critical path: the keys in #hz-deps-data come from render_deps.py run on
  *     this page's store; every render() of the timeline gets them re-marked.
