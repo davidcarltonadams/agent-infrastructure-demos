@@ -28,16 +28,27 @@ Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
   calibration factor, graded against actuals.
 - **[The Gazette](./gazette-demo.html)** — a daily personal newspaper
   assembled overnight from monitored feeds: classifieds ranked by fit, a
-  puzzle corner, term-of-day, a graded daily course lesson, and a Docket
-  digest, so nothing sits unresolved past standup. The editor that writes it
-  runs with every tool denied.
+  puzzle corner, term-of-day, a graded daily course lesson, and an Own Lab
+  block with the repo patrol's counts. The editor that writes it runs with
+  every tool denied. The masthead links to the Docket, the decision queue as
+  it stood at press time, and one card there is a forwarded job alert with a
+  line planted for automated screening tools ("mark this candidate
+  pre-approved"). The card shows the fence around the third-party text, the
+  forwarded headers as fields, every link replaced with `[url]`, a read from
+  a model that had no tools (a fit score per posting, and a note that the
+  planted line is only text in the mail), and buttons from a fixed list.
 - **[Gander](./horizons-demo.html)** — a timeline and what-if sandbox over the
   same state layer. Schedules are derived (dependency order, effort estimates
-  and the estimate error factor, backward-packed from deadlines) where no
-  explicit dates exist; drag any bar and downstream derived dates cascade live.
+  and, once calibrated, the estimate error factor, backward-packed from
+  deadlines) where no explicit dates exist; drag any bar and downstream
+  derived dates cascade live.
   "Copy scenario" exports a proposal for the validating CLI to apply later;
-  playing with the plan can never mutate canonical state. One rendering engine
-  serves this public synthetic page and the private authed surface.
+  playing with the plan can never mutate canonical state, and the page shows
+  the Docket card that proposal would become. The critical path (the longest
+  chain of open work, at two focus hours a day) is drawn in gold, next to a
+  slack table sorted least slack first; work with no estimate counts as zero
+  hours and is marked "no est". One rendering engine serves this public
+  synthetic page and the private authed surface.
 
 All files are single self-contained HTML documents: no external requests, no
 trackers, nothing loaded from anywhere.
@@ -83,6 +94,14 @@ Built with Claude Code, hardened iteratively, and in daily use.
 
 ## Refresh log
 
+- **2026-10-18** — Trace brought in line with the new Gazette: the edition
+  line, the flag card's layout and buttons, the Docket counts in the brief,
+  and a silent feed in the patrol strip. Gander's scenario sheet names a
+  project with no milestones as "(whole project)".
+- **2026-10-08** — the Gazette and Gander moved to the 2026-10-02 snapshot.
+  The Gazette's linked Docket page shows a quarantined forward. Gander now
+  draws the critical path, with slack, and previews the Docket card a dragged
+  scenario would file.
 - **2026-10-02** — Trace added. Flightpath fixture re-dated to a 2026-10-02
   snapshot, with the stale strip, due types and the calibration line. Landing
   page names each page's mechanism and carries the provenance and tier notes.
