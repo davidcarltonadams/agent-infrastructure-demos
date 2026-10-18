@@ -47,8 +47,9 @@ Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
   the Docket card that proposal would become. The critical path (the longest
   chain of open work, at two focus hours a day) is drawn in gold, next to a
   slack table sorted least slack first; work with no estimate counts as zero
-  hours and is marked "no est". One rendering engine serves this public
-  synthetic page and the private authed surface.
+  hours and is marked "no est". A project that waits on another project's
+  item counts that project's open work ahead of its own. One rendering engine
+  serves this public synthetic page and the private authed surface.
 
 All files are single self-contained HTML documents: no external requests, no
 trackers, nothing loaded from anywhere.
@@ -97,7 +98,10 @@ Built with Claude Code, hardened iteratively, and in daily use.
 - **2026-10-18** — Trace brought in line with the new Gazette: the edition
   line, the flag card's layout and buttons, the Docket counts in the brief,
   and a silent feed in the patrol strip. Gander's scenario sheet names a
-  project with no milestones as "(whole project)".
+  project with no milestones as "(whole project)". Later the same day,
+  Gander's slack started counting the wait on another project: the residency
+  application waits on the EP's master, so its row now reads +70 d, and the
+  note warning that +91 d left the wait out is gone.
 - **2026-10-08** — the Gazette and Gander moved to the 2026-10-02 snapshot.
   The Gazette's linked Docket page shows a quarantined forward. Gander now
   draws the critical path, with slack, and previews the Docket card a dragged
