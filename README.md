@@ -45,10 +45,15 @@ Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
   "Copy scenario" exports a proposal for the validating CLI to apply later;
   playing with the plan can never mutate canonical state, and the page shows
   the Docket card that proposal would become. The critical path (the longest
-  chain of open work, at two focus hours a day) is drawn in gold, next to a
-  slack table sorted least slack first; work with no estimate counts as zero
-  hours and is marked "no est". One rendering engine serves this public
-  synthetic page and the private authed surface.
+  chain of unfinished items by hours left, at two focus hours a day) is drawn
+  in gold, next to a slack table sorted least slack first. An item's hours
+  left are its estimate less the share already done; work with no estimate
+  counts as zero hours and is marked "no est" on its own project's row. A
+  project gated on another project's item first waits for the hours left on
+  the predecessor's chain up to that item (transitively, on the path through
+  it). One engine computes both this synthetic page and the private authed
+  surface; the demo layer on top (caveat wording, styling, the card preview,
+  trimmed code comments) is kept by hand.
 
 All files are single self-contained HTML documents: no external requests, no
 trackers, nothing loaded from anywhere.
@@ -97,7 +102,13 @@ Built with Claude Code, hardened iteratively, and in daily use.
 - **2026-10-18** — Trace brought in line with the new Gazette: the edition
   line, the flag card's layout and buttons, the Docket counts in the brief,
   and a silent feed in the patrol strip. Gander's scenario sheet names a
-  project with no milestones as "(whole project)".
+  project with no milestones as "(whole project)". Gander is rebuilt on the
+  current dependency renderer, which counts a cross-project wait (since
+  2026-10-12) and weighs each item by its hours left (since 2026-10-18,
+  engine PR 311). The residency application waits 28 h on the EP's master
+  and now shows +77 d; the note warning that +91 d left the wait out is
+  gone. Rows with work under way gain slack, the concert's most (+9 d to
+  +18 d).
 - **2026-10-08** — the Gazette and Gander moved to the 2026-10-02 snapshot.
   The Gazette's linked Docket page shows a quarantined forward. Gander now
   draws the critical path, with slack, and previews the Docket card a dragged
