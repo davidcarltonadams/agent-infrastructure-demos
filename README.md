@@ -12,11 +12,9 @@ interaction patterns are the real system's.
 | Demo | Synthetic | Real |
 |---|---|---|
 | Trace | The organisation, the message, the card, the project and the people. | The lanes, the gates, the timings and the formats, as of 2026-10-02. |
-| Flightpath | Projects, people, dates, estimates and log entries (a 2026-10-02 snapshot). | The card and milestone layout, dependency chips, stale strip, due types, heat index, rank overrides and estimate ledger as the production system defines them. |
+| Flightpath | Projects, people, dates, estimates and log entries (a 2026-10-02 snapshot). | The card and milestone layout, dependency chips, stale strip, due types, heat index, rank overrides and estimate ledger. The heat badge is a label here; production shows it as the act-line dot colour. |
 | The Gazette | Feeds, classifieds, lesson, patrol counts and the forwarded job alert. Buttons send nothing. | The edition layout, the tool-less editor design, and the Docket card's fence, `[url]` replacement and fixed button list. |
-| Gander | Every project, date and name. | The engine: schedule derivation, dependency cascade, critical path, slack and the what-if sandbox. The same engine runs the private authed surface. |
-
-Not shown: the production system's live data, its cron and launchd jobs, the validating CLI that writes state, and outbound channels. Each page is a static snapshot with no backend.
+| Gander | Every project, date and name. | The schedule derivation, dependency cascade and what-if sandbox. Critical path and slack are read from the dependency script's output and drawn by this page's own layer. |
 
 ## Demos
 
