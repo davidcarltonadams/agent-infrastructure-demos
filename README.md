@@ -7,6 +7,15 @@ designed, built, and operated daily by [David Carlton Adams](https://davidcarlto
 belong to an invented world; the architecture, the gates, the formats and the
 interaction patterns are the real system's.
 
+## What is real, what is synthetic
+
+| Demo | Synthetic | Real |
+|---|---|---|
+| Trace | The organisation, the message, the card, the project and the people. | The lanes, the gates, the timings and the formats, as of 2026-10-02. |
+| Flightpath | Projects, people, dates, estimates and log entries (a 2026-10-02 snapshot). | The card and milestone layout, dependency chips, stale strip, due types, heat index, rank overrides and estimate ledger. The heat badge is a label here; production shows it as the act-line dot colour. |
+| The Gazette | Feeds, classifieds, lesson, patrol counts and the forwarded job alert. Buttons send nothing. | The edition layout, the tool-less editor design, and the Docket card's fence, `[url]` replacement and fixed button list. |
+| Gander | Every project, date and name. | The schedule derivation, dependency cascade and what-if sandbox. Critical path and slack are read from the dependency script's output and drawn by this page's own layer. |
+
 ## Demos
 
 Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
@@ -120,3 +129,5 @@ Built with Claude Code, hardened iteratively, and in daily use.
   Gander), landing page restyled to match the demos, a dead header link fixed.
 - **2026-08-17** — richer synthetic data: heat, rank, estimate ledgers, a
   Docket digest.
+
+License: MIT
