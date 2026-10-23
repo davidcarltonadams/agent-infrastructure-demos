@@ -35,7 +35,8 @@ Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
 - **[Flightpath](./atlas-demo.html)** — a one-true-state project layer: every
   project a card, every milestone a bar, dependency chips, collapse at every
   level. The real Flightpath is written to by exactly one validating CLI, and
-  every mutation carries a logged one-line reason. Also shown: the stale strip
+  every mutation is logged as an event, with a one-line note when one is
+  given. Also shown: the stale strip
   (line 4 of the seven-line brief, seven signals computed from each project's
   own log), due types (external, internal, soft, nudge), a derived **heat
   index**, explicit **rank overrides**, and the **estimate ledger** with its
@@ -81,8 +82,8 @@ shape:
 
 - **One canonical state layer, one writer.** Project state lives in one place
   and is written by one validating command-line tool. Every mutation is an
-  event in an append-only log with the reason that went with it, and the whole
-  day is replayable from that log and from git. Four read-only surfaces (the
+  event in an append-only log, with the note that went with it when there was
+  one, and the whole day can be reconstructed from that log and from git. Four read-only surfaces (the
   board, the timeline, the seven-line brief, the dependency graph) are
   re-rendered from the state file on every change, so they cannot disagree.
 - **Untrusted input never becomes an instruction.** Email forwards, scraped
@@ -120,9 +121,10 @@ Built with Claude Code, hardened iteratively, and in daily use.
 - **2026-10-23** — Gander's sandbox carries a drag downstream. Before, a drag
   in a project packed back from its due date moved only the dragged bar, and a
   cross-project wait never moved at all; now everything waiting on the bar
-  follows, across projects. An in-progress bar moves by exactly the drag (it
-  used to jump). Fixed in the shared engine, so the private surface has the
-  same fix; the page's starting view is unchanged. The landing page now opens
+  follows once its slack runs out, across projects; dates set by hand stay
+  put. A bar that is in progress or already late moves by exactly the drag
+  (both used to jump). The fix is in the engine both surfaces share; the
+  page's starting view is unchanged. The landing page now opens
   with the planted job-alert line, names what the pages show in the field's
   terms, and lists the system's limits.
 - **2026-10-18** — Trace brought in line with the new Gazette: the edition
