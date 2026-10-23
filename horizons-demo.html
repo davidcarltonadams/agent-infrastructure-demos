@@ -255,7 +255,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
   var ZOFF = { ds: 0, dd: 0 };
   function offAt(offsets, key) { return offsets[key] || ZOFF; }
   function toposort(ms) {
-    // local deps only; cross-project refs don't constrain in v1
+    // local deps only; a cross-project ref constrains in push(), below
     var idx = {}, indeg = {}, adj = {}, out = [], i, m;
     ms.forEach(function (mm, ii) { idx[mm.id] = ii; indeg[mm.id] = 0; adj[mm.id] = []; });
     var cyclic = false;
@@ -279,17 +279,92 @@ margin:-10px 0 6px;padding:10px 0 4px}
     return { order: out, cyclic: cyclic };
   }
 
+  // movable(m): the push pass may move it. Only an item with no explicit
+  // date (an explicit date stays pinned unless dragged itself), not started
+  // (an in-progress bar is anchored on today by the straddle rule), not done
+  // and not retired.
+  function movable(m) {
+    return !m.start && !m.due && !m.retired_ts && !(m.pct > 0);
+  }
+
   function schedule(data, offsets, opts) {
     opts = opts || {};
     var CFG = Object.assign({}, DEFAULTS, opts.cfg || {});
     var TODAY = opts.today !== undefined ? opts.today : pd(data.today);
     function dur(m) { return durOf(m, CFG); }
 
+    // settle(p, m, s, d, derived, o) -> the item as drawn: the planned dates
+    // s..d, the sandbox drag o on top, then the done / retired / straddle / slip
+    // rules. Pure: place() records what it returns, and backward-pack calls it
+    // with no drag to read an item's un-dragged start.
+    function settle(p, m, s, d, derived, o) {
+      var it = { key: p.id + "#" + m.id, mid: m.id, label: m.label || m.id,
+                 s: s + o.ds, d: d + o.dd, pct: m.pct, kind: m.kind || "bar",
+                 est_h: m.est_h || null, deps: m.depends_on || [],
+                 derived: !!derived, slipped: false, done: m.pct >= 100,
+                 retired: !!m.retired_ts };
+      if (it.s > it.d) it.s = it.d;   // a one-sided stretch can't invert the bar
+      // Finished work is never in the future. Pin to done_ts when present;
+      // otherwise clamp the bar to END at today, duration preserved. We do
+      // NOT know when an untimestamped item was done and can't recover it
+      // (the logs never wrote it) — the .derived dotted outline already
+      // carries "this date is ours, not the user's". Done items also never
+      // "slip".
+      if (it.done) {
+        if (m.done_ts) {
+          var dd = pd(String(m.done_ts).slice(0, 10));
+          it.d = dd; it.s = Math.min(it.s, dd);
+        } else if (it.d > TODAY) {
+          var dur0 = it.d - it.s + 1;
+          it.d = TODAY; it.s = TODAY - dur0 + 1;
+        }
+      }
+      // retired = frozen fragment: the work stopped at retired_ts, so the
+      // bar ends there (same never-in-the-future logic as done-pinning).
+      else if (it.retired) {
+        var rt = pd(String(m.retired_ts).slice(0, 10));
+        it.d = rt; it.s = Math.min(it.s, rt);
+      }
+      // straddle rule: an in-progress item's FINISHED fraction belongs to the
+      // past, so the left-anchored pct fill lands exactly on the today line —
+      // plan and actual read off one geometry. Derived dates only (an explicit
+      // start/due is the user's assertion and outranks our estimate). The rule
+      // reads the un-dragged dates and the drag goes on top, so a dragged bar
+      // moves by exactly the drag the tooltip showed.
+      else if (derived && (m.pct || 0) > 0) {
+        // Measure the DONE portion backward from today, not the remainder
+        // forward — rounding the remainder up swallows the whole bar at
+        // short durations (30% of 3 days ceil'd back to 3, nothing left of
+        // the line). Cap at dur-1 so an unfinished bar always keeps a day in
+        // the future. Day-granularity means the fill and the line agree to
+        // within a day, not exactly.
+        var dur1 = d - s + 1;
+        var s1 = TODAY - Math.min(dur1 - 1, Math.round(dur1 * m.pct / 100));
+        it.s = s1 + o.ds; it.d = s1 + dur1 - 1 + o.dd;
+        if (it.s > it.d) it.s = it.d;
+      }
+      // slip rule: nothing unfinished ends in the past (retired is not
+      // unfinished — it is over)
+      if (!it.done && !it.retired && it.d < TODAY) {
+        it.d = TODAY + Math.ceil(dur(m) * (1 - (m.pct || 0) / 100));
+        if (it.s > it.d) it.s = it.d;
+        it.slipped = true;
+      }
+      return it;
+    }
+
     var byKey = {}, views = [];
+    var plan = {};   // key -> {p, m, s, d, derived}: the un-dragged dates placed
+    function place(p, m, s, d, derived) {
+      var it = settle(p, m, s, d, derived, offAt(offsets, p.id + "#" + m.id));
+      plan[it.key] = { p: p, m: m, s: s, d: d, derived: derived };
+      byKey[it.key] = it;
+      return it;
+    }
+
     data.projects.forEach(function (p) {
       var ms = p.milestones || [];
       var view = { p: p, items: [], cyclic: false };
-      var off = function (mid) { return offAt(offsets, p.id + "#" + mid); };
       var fin = {};   // mid -> {s,d}
 
       if (!ms.length) {
@@ -308,58 +383,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
       view.cyclic = topo.cyclic;
 
       function finalize(m, s, d, flags) {
-        var o = off(m.id);
-        var it = { key: p.id + "#" + m.id, mid: m.id, label: m.label || m.id,
-                   s: s + o.ds, d: d + o.dd, pct: m.pct, kind: m.kind || "bar",
-                   est_h: m.est_h || null, deps: m.depends_on || [],
-                   derived: !!flags.derived, slipped: false, done: m.pct >= 100,
-                   retired: !!m.retired_ts };
-        if (it.s > it.d) it.s = it.d;   // a one-sided stretch can't invert the bar
-        // Finished work is never in the future. Pin to done_ts when present;
-        // otherwise clamp the bar to END at today, duration preserved. We do
-        // NOT know when an untimestamped item was done and can't recover it
-        // (the logs never wrote it) — the .derived dotted outline already
-        // carries "this date is ours, not the user's". Done items also never
-        // "slip".
-        if (it.done) {
-          if (m.done_ts) {
-            var dd = pd(String(m.done_ts).slice(0, 10));
-            it.d = dd; it.s = Math.min(it.s, dd);
-          } else if (it.d > TODAY) {
-            var dur0 = it.d - it.s + 1;
-            it.d = TODAY; it.s = TODAY - dur0 + 1;
-          }
-        }
-        // retired = frozen fragment: the work stopped at retired_ts, so the
-        // bar ends there (same never-in-the-future logic as done-pinning).
-        else if (it.retired) {
-          var rt = pd(String(m.retired_ts).slice(0, 10));
-          it.d = rt; it.s = Math.min(it.s, rt);
-        }
-        // straddle rule: an in-progress item's FINISHED fraction belongs to the
-        // past, so the left-anchored pct fill lands exactly on the today line —
-        // plan and actual read off one geometry. Derived dates only (an explicit
-        // start/due is the user's assertion and outranks our estimate), and never
-        // against a sandbox drag, which would snap the bar back under the hand.
-        else if (flags.derived && (m.pct || 0) > 0 && !o.ds && !o.dd) {
-          // Measure the DONE portion backward from today, not the remainder
-          // forward — rounding the remainder up swallows the whole bar at
-          // short durations (30% of 3 days ceil'd back to 3, nothing left of
-          // the line). Cap at dur-1 so an unfinished bar always keeps a day in
-          // the future. Day-granularity means the fill and the line agree to
-          // within a day, not exactly.
-          var dur1 = it.d - it.s + 1;
-          it.s = TODAY - Math.min(dur1 - 1, Math.round(dur1 * m.pct / 100));
-          it.d = it.s + dur1 - 1;
-        }
-        // slip rule: nothing unfinished ends in the past (retired is not
-        // unfinished — it is over)
-        if (!it.done && !it.retired && it.d < TODAY) {
-          it.d = TODAY + Math.ceil(dur(m) * (1 - (m.pct || 0) / 100));
-          if (it.s > it.d) it.s = it.d;
-          it.slipped = true;
-        }
-        fin[m.id] = it; byKey[it.key] = it; return it;
+        return (fin[m.id] = place(p, m, s, d, !!flags.derived));
       }
 
       // Pass A — explicitly dated, topo order
@@ -382,8 +406,12 @@ margin:-10px 0 6px;padding:10px 0 4px}
           var d = nextS === null ? pd(p.due) : Math.min(pd(p.due), nextS - 1);
           var s = d - dur(m) + 1;
           var it2 = finalize(m, s, d, { derived: true });
-          // finished/retired work doesn't consume chain space (forward-pack note)
-          if (!it2.done && !it2.retired) nextS = it2.s;
+          // finished/retired work doesn't consume chain space (forward-pack note).
+          // The chain packs against the un-dragged start, so a drag never
+          // moves what comes before it; the push pass below carries a drag
+          // downstream.
+          if (!it2.done && !it2.retired)
+            nextS = settle(p, m, s, d, true, ZOFF).s;
         }
       } else {
         // forward-pack the undated remainder, array order (array order IS the plan)
@@ -407,9 +435,17 @@ margin:-10px 0 6px;padding:10px 0 4px}
           if (!it3.done && !it3.retired) prevD = it3.d;
         });
       }
+      views.push(view);
+    });
 
+    push(data, byKey, plan, place);
+
+    views.forEach(function (view) {
+      var p = view.p;
+      if (!(p.milestones || []).length) return;   // bare: drawn above
       // render in array order regardless of scheduling order
-      view.items = ms.map(function (m) { return fin[m.id]; }).filter(Boolean);
+      view.items = p.milestones.map(function (m) { return byKey[p.id + "#" + m.id]; })
+                               .filter(Boolean);
       var lo = Infinity, hi = -Infinity;
       view.items.forEach(function (it) {
         if (it.retired) return;   // fragment shouldn't stretch the envelope
@@ -422,9 +458,79 @@ margin:-10px 0 6px;padding:10px 0 4px}
       }
       if (p.due) hi = Math.max(hi, pd(p.due));
       view.env = [lo, hi];
-      views.push(view);
     });
     return { byKey: byKey, views: views };
+  }
+
+  // ---- push: nothing movable starts before what it waits on ends ------------
+  // Packing places each project on its own. Forward-pack already starts an
+  // item after the items before it; backward-pack sets each item against the
+  // one after it and never looks back; neither reads a cross-project ref. So
+  // once every project is placed, walk every item in dependency order and
+  // move later any movable() item that would start before something it waits
+  // on ends: the unfinished item before it in array order (array order IS the
+  // plan), a depends_on that comes earlier in the list (a later one is ignored,
+  // as forward-pack ignores it), and a "project:pid#mid" / "project:pid" ref
+  // to an on-chart project. Later only, never earlier. The push shifts the
+  // un-dragged dates and places the item again, so a drag on a pushed item
+  // still lands where the hand left it. An item on a dependency loop is never
+  // reached and stays where packing put it.
+  function push(data, byKey, plan, place) {
+    var projById = Object.create(null);
+    (data.projects || []).forEach(function (p) { projById[p.id] = p; });
+    function keysOf(pid) {
+      var p = projById[pid];
+      if (!p || !onChart(p)) return [];
+      var ms = p.milestones || [];
+      if (!ms.length) return [pid + "#__prj"];
+      return ms.map(function (m) { return pid + "#" + m.id; });
+    }
+
+    var waits = Object.create(null);   // key -> keys it waits on
+    (data.projects || []).forEach(function (p) {
+      var at = Object.create(null), prev = null;
+      (p.milestones || []).forEach(function (m, i) { at[m.id] = i; });
+      (p.milestones || []).forEach(function (m, i) {
+        var key = p.id + "#" + m.id, w = prev ? [prev] : [];
+        (m.depends_on || []).forEach(function (dep) {
+          if (dep.indexOf("project:") !== 0) {
+            if (at[dep] !== undefined && at[dep] < i) w.push(p.id + "#" + dep);
+            return;
+          }
+          var ref = dep.slice(8), cut = ref.indexOf("#");
+          var pid = cut < 0 ? ref : ref.slice(0, cut);
+          if (pid === p.id) return;   // a self-ref is the local chain's business
+          keysOf(pid).forEach(function (k) {
+            if (cut < 0 || k === ref) w.push(k);
+          });
+        });
+        waits[key] = w;
+        if (!(m.pct >= 100) && !m.retired_ts) prev = key;
+      });
+    });
+
+    // Kahn over every placed item, in data order
+    var keys = Object.keys(byKey), indeg = Object.create(null), after = Object.create(null);
+    keys.forEach(function (k) { indeg[k] = 0; after[k] = []; });
+    keys.forEach(function (k) {
+      (waits[k] || []).forEach(function (w) {
+        if (indeg[w] === undefined) return;
+        after[w].push(k); indeg[k]++;
+      });
+    });
+    var q = keys.filter(function (k) { return indeg[k] === 0; });
+    while (q.length) {
+      var k = q.shift(), e = plan[k];
+      if (e && movable(e.m)) {
+        var r = -Infinity;
+        waits[k].forEach(function (w) {
+          var it = byKey[w];
+          if (it && !it.done && !it.retired) r = Math.max(r, it.d + 1);
+        });
+        if (r > e.s) place(e.p, e.m, r, e.d + (r - e.s), e.derived);
+      }
+      after[k].forEach(function (n) { if (--indeg[n] === 0) q.push(n); });
+    }
   }
 
   // ---- chart membership ------------------------------------------------------
