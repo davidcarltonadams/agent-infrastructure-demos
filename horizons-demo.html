@@ -527,6 +527,17 @@ margin:-10px 0 6px;padding:10px 0 4px}
       });
     });
 
+    // Only a wait that can act is kept: one held by an item push() may move,
+    // on an item that is neither done nor retired. Left in, a done item's
+    // waits (or a pinned one's) could close a loop that isn't there and
+    // switch off a real wait on the way round.
+    keys.forEach(function (k) {
+      var e = plan[k];
+      waits[k] = e && movable(e.m) ? waits[k].filter(function (w) {
+        return !byKey[w].done && !byKey[w].retired;
+      }) : [];
+    });
+
     // Kahn over every placed item, in data order. A wait inside a loop is
     // left out, so the rest is acyclic and every item is reached.
     var loop = loops(keys, waits);
@@ -544,8 +555,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
       if (e && movable(e.m)) {
         var r = -Infinity;
         waits[k].forEach(function (w) {
-          var it = byKey[w];
-          if (counts(k, w) && !it.done && !it.retired) r = Math.max(r, it.d + 1);
+          if (counts(k, w)) r = Math.max(r, byKey[w].d + 1);
         });
         if (r > e.s) {
           var late = byKey[k].slipped;
