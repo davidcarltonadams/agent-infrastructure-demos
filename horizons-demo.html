@@ -485,11 +485,12 @@ margin:-10px 0 6px;padding:10px 0 4px}
   // ever moves an item later than its own plan, never earlier. It shifts the
   // un-dragged dates and places the item again, so a drag on a pushed item
   // still lands where the hand left it, and a bar that was late before the
-  // push keeps its slipped mark. An item on a dependency loop (a cross-project
-  // ref can close one) stays where packing put it; what waits on the loop is
-  // still pushed. A drag earlier therefore pulls a forward-packed (as soon as
-  // possible) successor along, since the packer reads the dragged end, and
-  // leaves a backward-packed (as late as possible) one at its deadline.
+  // push keeps its slipped mark. On a dependency loop (a cross-project ref can
+  // close one) an item is pushed only by what it waits on outside the loop;
+  // the waits inside it are not walked. A drag earlier pulls a forward-packed
+  // (as soon as possible) successor along, since the packer reads the dragged
+  // end, and leaves a backward-packed (as late as possible) one at its
+  // deadline.
   function push(data, byKey, plan, place) {
     var projById = Object.create(null);
     (data.projects || []).forEach(function (p) { projById[p.id] = p; });
@@ -526,24 +527,25 @@ margin:-10px 0 6px;padding:10px 0 4px}
       });
     });
 
-    // Kahn over every placed item, in data order. An item on a loop counts
-    // none of its waits, so it is released at once and never pushed, and
-    // what waits on it is released after it.
+    // Kahn over every placed item, in data order. A wait inside a loop is
+    // left out, so the rest is acyclic and every item is reached.
     var loop = loops(keys, waits);
+    function counts(k, w) { return loop[k] === undefined || loop[k] !== loop[w]; }
     var indeg = Object.create(null), after = Object.create(null);
     keys.forEach(function (k) { indeg[k] = 0; after[k] = []; });
     keys.forEach(function (k) {
-      if (loop[k]) return;
-      waits[k].forEach(function (w) { after[w].push(k); indeg[k]++; });
+      waits[k].forEach(function (w) {
+        if (counts(k, w)) { after[w].push(k); indeg[k]++; }
+      });
     });
     var q = keys.filter(function (k) { return indeg[k] === 0; });
     while (q.length) {
       var k = q.shift(), e = plan[k];
-      if (e && !loop[k] && movable(e.m)) {
+      if (e && movable(e.m)) {
         var r = -Infinity;
         waits[k].forEach(function (w) {
           var it = byKey[w];
-          if (!it.done && !it.retired) r = Math.max(r, it.d + 1);
+          if (counts(k, w) && !it.done && !it.retired) r = Math.max(r, it.d + 1);
         });
         if (r > e.s) {
           var late = byKey[k].slipped;
@@ -555,9 +557,9 @@ margin:-10px 0 6px;padding:10px 0 4px}
     }
   }
 
-  // loops(keys, waits) -> {key: 1} for every item on a dependency loop: a
-  // strongly connected component of more than one item, or an item that
-  // waits on itself (Tarjan).
+  // loops(keys, waits) -> {key: loop id} for every item on a dependency
+  // loop: a strongly connected component of more than one item, or an item
+  // that waits on itself (Tarjan). Items on the same loop share an id.
   function loops(keys, waits) {
     var at = Object.create(null), low = Object.create(null), held = Object.create(null);
     var stack = [], n = 0, out = Object.create(null);
@@ -571,7 +573,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
       var scc = [], x;
       do { x = stack.pop(); held[x] = false; scc.push(x); } while (x !== k);
       if (scc.length > 1 || waits[k].indexOf(k) >= 0)
-        scc.forEach(function (y) { out[y] = 1; });
+        scc.forEach(function (y) { out[y] = k; });
     }
     keys.forEach(function (k) { if (at[k] === undefined) visit(k); });
     return out;

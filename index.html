@@ -106,8 +106,9 @@ text, and the model's summary on the card points the line out.</p>
 or a feed, that model has no tools and can only return JSON. Plain code decides what
 the JSON becomes: a card in my queue, or a paragraph in the morning paper.</dd>
 <dt>Least privilege</dt>
-<dd>The models in the scheduled jobs run with every tool denied: the one that writes the
-morning digest, and the one that reads forwarded mail.</dd>
+<dd>The scheduled models that read untrusted text, the morning digest's editor and the
+reader of forwarded mail, run with every tool denied. The job that builds class
+materials gets file tools confined to that day's folders, and no network.</dd>
 <dt>Human approval for irreversible actions</dt>
 <dd>Mail, file shares and calendar invites go out only when I click. Reversible writes go
 ahead and land in a log, and the log is what I audit.</dd>
@@ -120,7 +121,8 @@ reconstructed from that log and from git.</dd>
 often a second model family. Anything touching a trust boundary waits for my merge.</dd>
 <dt>Schedule risk you can see</dt>
 <dd>Slip a task on the timeline and whatever waits on it is pushed back once its slack
-runs out, in other projects too. Dates I set by hand stay put.</dd>
+runs out, in other projects too. Dates I set by hand, and work already under way,
+stay put.</dd>
 <dt>Estimates checked against actuals</dt>
 <dd>Estimates are graded against what the work actually took, and the error feeds a
 calibration factor for the timeline. Only a handful are graded so far.</dd>
@@ -177,9 +179,8 @@ checked against what I actually said.</li>
 data-retention terms.</li>
 <li>It's built for one person on one Mac mini, with no multi-user permissions. That
 machine is a single point of trust.</li>
-<li>The planted line above asks for actions this system can't take anyway. It shows the
-design; it is not a measured defense rate, and none of the controls is formally
-verified.</li>
+<li>The planted line above asks for actions that need my click. It shows the design; it
+is not a measured defense rate, and none of the controls is formally verified.</li>
 </ul>
 </section>
 
