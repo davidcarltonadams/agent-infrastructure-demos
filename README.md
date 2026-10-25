@@ -26,12 +26,12 @@ story in a paragraph.
 Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
 
 - **[Trace](./trace-demo.html)** — one forwarded email followed through one
-  day: fourteen stops on the day's real schedule, nine of them on the item's
-  path. Each stop names what runs (a cron job, a launchd timer, a session with
-  the person present), what it reads, what it writes, and what gate stands in
-  front of it; each opens to show what that surface actually displayed, in its
-  own format. The page ends with what the system did not do, by design. Play
-  the day or tap a stop.
+  day, drawn as a map: fourteen stops on the day's real schedule, nine of them
+  on the item's path, joined by the four kinds of edge. Tap a bubble for what
+  happened there and the gate in front of it, or play the day.
+  [The long version](./trace-long.html) names what runs, what it reads and
+  writes at each stop, opens each one to show what that surface actually
+  displayed, and ends with what the system did not do, by design.
 - **[Flightpath](./atlas-demo.html)** — a one-true-state project layer: every
   project a card, every milestone a bar, dependency chips, collapse at every
   level. The real Flightpath is written to by exactly one validating CLI, and
@@ -118,6 +118,12 @@ Built with Claude Code, hardened iteratively, and in daily use.
 
 ## Refresh log
 
+- **2026-10-25** — Trace redrawn as a map in its own look (blue and pink
+  ink on off-white): big bubbles for the email's path, small ones for the
+  rest of the day, a short card and its gate on tap. The step-by-step page
+  stays as [trace-long](./trace-long.html), linked both ways. The Gazette
+  demo takes the live paper's newsprint restyle of 2026-10-22: sepia paper,
+  Didot nameplate, small caps; the linked Docket sits on the same paper.
 - **2026-10-23** — Gander's sandbox carries a drag downstream. Before, a drag
   in a project packed back from its due date moved only the dragged bar, and a
   cross-project wait never moved at all; now everything waiting on the bar
