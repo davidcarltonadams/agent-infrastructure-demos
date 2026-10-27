@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="referrer" content="no-referrer">
-<title>gander</title>
+<title>timeline planner</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23151210'/%3E%3Crect x='10' y='14' width='26' height='7' rx='3.5' fill='%23d4a24e'/%3E%3Crect x='20' y='26' width='30' height='7' rx='3.5' fill='%23d4a24e' opacity='.65'/%3E%3Crect x='30' y='38' width='24' height='7' rx='3.5' fill='%23d4a24e' opacity='.4'/%3E%3Cline x1='32' y1='8' x2='32' y2='56' stroke='%23d4a24e' stroke-width='2' stroke-dasharray='3 3' opacity='.8'/%3E%3C/svg%3E">
 <style>
 :root{--bg:#14110e;--panel:#1d1915;--panel2:#241f19;--line:#332c23;
@@ -190,8 +190,8 @@ margin:-10px 0 6px;padding:10px 0 4px}
 #hz-sheet .dk .discussbadge{font:11px ui-monospace,Menlo,monospace;color:#9a8f7d}
 </style></head><body>
 <div class="hd">
-<h1>gander</h1>
-<div class="stamp">snapshot 2026-10-02 · synthetic · <a href="index.html">demos →</a> · <a href="atlas-demo.html">flightpath →</a> · <a href="trace-demo.html">trace →</a></div>
+<h1>timeline planner</h1>
+<div class="stamp">snapshot 2026-10-02 · synthetic · <a href="index.html">demos →</a> · <a href="atlas-demo.html">project tracker →</a> · <a href="trace-demo.html">agent trace →</a></div>
 <div class='demobanner'>Synthetic demo — every project, date and name here is fictional. The engine (schedule derivation, dependency cascade, sandbox) is the real system's.</div>
 <div class="legend"><span>▬ dated</span><span>⌇ dotted = derived</span>
 <span>▤ translucent = tentative</span><span>│ gold line = today</span>
@@ -201,7 +201,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
 </div>
 <div id="hz-app"></div>
 <div id="hz-sheet"></div>
-<noscript><div class='nojs'><p>Gander is an interactive timeline and needs JavaScript. Projects on the board:</p><ul><li>Arts council grant application — due 2026-10-14</li><li>Booking system pilot</li><li>EP release — due 2026-12-21</li><li>Fall concert production — due 2026-10-26</li><li>Commissioned quartet premiere — due 2027-02-09</li><li>Residency application — due 2027-01-05</li><li>Spring tour (three cities) — due 2027-04-20</li><li>Opera staging, option B: co-production next season — due 2027-07-29</li><li>Opera staging, option A: this season — due 2027-03-01</li></ul></div></noscript>
+<noscript><div class='nojs'><p>The timeline planner is interactive and needs JavaScript. Projects on the board:</p><ul><li>Arts council grant application — due 2026-10-14</li><li>Booking system pilot</li><li>EP release — due 2026-12-21</li><li>Fall concert production — due 2026-10-26</li><li>Commissioned quartet premiere — due 2027-02-09</li><li>Residency application — due 2027-01-05</li><li>Spring tour (three cities) — due 2027-04-20</li><li>Opera staging, option B: co-production next season — due 2027-07-29</li><li>Opera staging, option A: this season — due 2027-03-01</li></ul></div></noscript>
 <script type="application/json" id="hz-data">{"today": "2026-10-02", "demo": true, "cfg": {"focus_h_per_day": 2, "default_dur": 7, "max_dur": 90, "calibration": {}}, "areas": [{"id": "income", "label": "Income & Roles", "color": "#e07a3f"}, {"id": "org", "label": "Halcyon Collective", "color": "#6fae8f"}, {"id": "composition", "label": "Composition", "color": "#d4a24e"}, {"id": "systems", "label": "Systems", "color": "#7c9fd4"}], "projects": [{"id": "arts-council-grant", "title": "Arts council grant application", "area": "income", "stage": "active", "due": "2026-10-14", "due_type": "external", "milestones": [{"id": "narrative", "label": "Narrative draft", "pct": 0, "est_h": 10}, {"id": "budget", "label": "Budget", "pct": 0, "est_h": 4, "depends_on": ["narrative"]}, {"id": "samples", "label": "Work samples", "pct": 0, "est_h": 6, "depends_on": ["budget"]}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check", "due": "2026-10-14", "depends_on": ["samples"]}]}, {"id": "booking-system", "title": "Booking system pilot", "area": "systems", "stage": "active", "milestones": [{"id": "model", "label": "Data model", "pct": 40, "est_h": 30}, {"id": "pilot", "label": "Pilot with one client", "pct": 0, "est_h": 20, "depends_on": ["model"]}]}, {"id": "ep-release", "title": "EP release", "area": "composition", "stage": "active", "due": "2026-12-21", "due_type": "internal", "milestones": [{"id": "tracking", "label": "Tracking", "pct": 70, "est_h": 20}, {"id": "mix", "label": "Mix", "pct": 0, "est_h": 16, "depends_on": ["tracking"]}, {"id": "master", "label": "Master", "pct": 0, "est_h": 6, "depends_on": ["mix"]}, {"id": "distro", "label": "Distributor upload", "pct": 0, "kind": "check", "depends_on": ["master"]}, {"id": "release", "label": "Release day", "pct": 0, "kind": "check"}]}, {"id": "fall-concert", "title": "Fall concert production", "area": "org", "stage": "active", "due": "2026-10-26", "due_type": "external", "milestones": [{"id": "program", "label": "Program locked", "pct": 100, "kind": "check", "done_ts": "2026-08-31"}, {"id": "venue", "label": "Venue confirmed", "pct": 100, "kind": "check", "done_ts": "2026-09-11"}, {"id": "notes", "label": "Program notes", "pct": 30, "due": "2026-09-28", "est_h": 8}, {"id": "rehearsals", "label": "Rehearsal block", "pct": 60, "start": "2026-09-18", "est_h": 30}, {"id": "marketing", "label": "Announce + press", "pct": 0, "kind": "check", "depends_on": ["venue"]}, {"id": "performance", "label": "Performance", "pct": 0, "kind": "check", "due": "2026-10-26"}]}, {"id": "quartet-commission", "title": "Commissioned quartet premiere", "area": "composition", "stage": "active", "due": "2027-02-09", "due_type": "external", "milestones": [{"id": "sketches", "label": "Sketches", "pct": 100, "done_ts": "2026-08-23"}, {"id": "draft", "label": "Draft score", "pct": 45, "est_h": 40}, {"id": "parts", "label": "Parts extracted", "pct": 0, "est_h": 12, "depends_on": ["draft"]}, {"id": "workshop", "label": "Workshop reading", "pct": 0, "kind": "check", "due": "2026-12-01"}, {"id": "revisions", "label": "Revisions", "pct": 0, "depends_on": ["workshop"]}, {"id": "premiere", "label": "Premiere", "pct": 0, "kind": "check", "due": "2027-02-09"}]}, {"id": "residency-app", "title": "Residency application", "area": "income", "stage": "planned", "due": "2027-01-05", "due_type": "external", "milestones": [{"id": "materials", "label": "Materials + recording", "pct": 0, "est_h": 8, "depends_on": ["project:ep-release#master"]}, {"id": "submit", "label": "Submit", "pct": 0, "kind": "check"}]}, {"id": "spring-tour", "title": "Spring tour (three cities)", "area": "org", "stage": "idea", "start": "2027-03-01", "due": "2027-04-20", "tentative": true, "milestones": []}, {"id": "staging-next-season", "title": "Opera staging, option B: co-production next season", "area": "composition", "stage": "idea", "start": "2027-06-09", "due": "2027-07-29", "tentative": true, "scenario": "opera-staging", "milestones": []}, {"id": "staging-this-season", "title": "Opera staging, option A: this season", "area": "composition", "stage": "planned", "start": "2026-12-31", "due": "2027-03-01", "tentative": true, "scenario": "opera-staging", "milestones": []}]}</script>
 <script>
 /* gander_engine.js — the Gander scheduler, pure and importable.
@@ -1395,7 +1395,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
     // docket.py ID_RE ^[a-z0-9][a-z0-9-]*$, ID_MAX 64; project ids already fit
     var id = ("gander-" + prop.generated.replace(/-/g, "") + "-" + lead[0].project)
       .slice(0, 64).replace(/-+$/, "");
-    var tldr = "Gander scenario: " + lead.map(function (c) {
+    var tldr = "Timeline planner scenario: " + lead.map(function (c) {
       return what(c) + " " + signed(c.delta_days);
     }).join(", ") + (casc ? " (" + casc + " derived date" + (casc > 1 ? "s" : "") +
       " follow)" : "") + ". Apply it?";
@@ -1408,7 +1408,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
       options: ["apply as proposed", "keep the current plan"],
       effort: "S", due: null, weight: 2, flag: false, status: "open",
       wake_date: null, decision: null,
-      apply_note: "a session writes the dragged dates with the Flightpath CLI; " +
+      apply_note: "a session writes the dragged dates with the project tracker's CLI; " +
         "derived dates recompute from them",
       lane: "misc", recur_days: null, decide_effort: "glance"
     };
@@ -1455,7 +1455,7 @@ margin:-10px 0 6px;padding:10px 0 4px}
     if (old) old.parentNode.removeChild(old);
     if (!c) return;
     var wrap = el("div", "dk");
-    wrap.appendChild(el("div", "dkhd", "→ the Docket card this scenario would file:"));
+    wrap.appendChild(el("div", "dkhd", "→ the decision-queue card this scenario would file:"));
     wrap.appendChild(cardEl(c));
     wrap.appendChild(el("p", "dknote",
       "Nothing is filed from this page, and these buttons do nothing. In the real " +
