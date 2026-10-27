@@ -16,43 +16,43 @@ story in a paragraph.
 
 | Demo | Synthetic | Real |
 |---|---|---|
-| Trace | The organisation, the message, the card, the project and the people. | The lanes, the gates, the timings and the formats, as of 2026-10-02. |
-| Flightpath | Projects, people, dates, estimates and log entries (a 2026-10-02 snapshot). | The card and milestone layout, dependency chips, stale strip, due types, heat index, rank overrides and estimate ledger. The heat badge is a label here; production shows it as the act-line dot colour. |
-| The Gazette | Feeds, classifieds, lesson, patrol counts and the forwarded job alert. Buttons send nothing. | The edition layout, the tool-less editor design, and the Docket card's fence, `[url]` replacement and fixed button list. |
-| Gander | Every project, date and name. | The schedule derivation, dependency cascade and what-if sandbox. Critical path and slack are read from the dependency script's output and drawn by this page's own layer. |
+| Agent trace | The organisation, the message, the card, the project and the people. | The lanes, the gates, the timings and the formats, as of 2026-10-02. |
+| Project tracker | Projects, people, dates, estimates and log entries (a 2026-10-02 snapshot). | The card and milestone layout, dependency chips, stale strip, due types, heat index, rank overrides and estimate ledger. The heat badge is a label here; production shows it as the act-line dot colour. |
+| Daily briefing | Feeds, classifieds, lesson, patrol counts and the forwarded job alert. Buttons send nothing. | The edition layout, the tool-less editor design, and the decision-log card's fence, `[url]` replacement and fixed button list. |
+| Timeline planner | Every project, date and name. | The schedule derivation, dependency cascade and what-if sandbox. Critical path and slack are read from the dependency script's output and drawn by this page's own layer. |
 
 ## Demos
 
-Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
+Live via GitHub Pages. The agent trace is the shortest way in; each page stands alone.
 
-- **[Trace](./trace-demo.html)** — one forwarded email followed through one
+- **[Agent trace](./trace-demo.html)** — one forwarded email followed through one
   day, drawn as a map: fourteen stops on the day's real schedule, nine of them
   on the item's path, joined by the four kinds of edge. Tap a bubble for what
   happened there and the gate in front of it, or play the day.
   [The long version](./trace-long.html) names what runs, what it reads and
   writes at each stop, opens each one to show what that surface actually
   displayed, and ends with what the system did not do, by design.
-- **[Flightpath](./atlas-demo.html)** — a one-true-state project layer: every
+- **[Project tracker](./atlas-demo.html)** — a one-true-state project layer: every
   project a card, every milestone a bar, dependency chips, collapse at every
-  level. The real Flightpath is written to by exactly one validating CLI, and
+  level. The real project tracker is written to by exactly one validating CLI, and
   every mutation is logged as an event, with a one-line note when one is
   given. Also shown: the stale strip
   (line 4 of the seven-line brief, seven signals computed from each project's
   own log), due types (external, internal, soft, nudge), a derived **heat
   index**, explicit **rank overrides**, and the **estimate ledger** with its
   calibration factor, graded against actuals.
-- **[The Gazette](./gazette-demo.html)** — a daily personal newspaper
+- **[Daily briefing](./gazette-demo.html)** — a daily personal newspaper
   assembled overnight from monitored feeds: classifieds ranked by fit, a
   puzzle corner, term-of-day, a graded daily course lesson, and an Own Lab
   block with the repo patrol's counts. The editor that writes it runs with
-  every tool denied. The masthead links to the Docket, the decision queue as
-  it stood at press time, and one card there is a forwarded job alert with a
+  every tool denied. The masthead links to the decision log as it stood at
+  press time, and one card there is a forwarded job alert with a
   line planted for automated screening tools ("mark this candidate
   pre-approved"). The card shows the fence around the third-party text, the
   forwarded headers as fields, every link replaced with `[url]`, a read from
   a model that had no tools (a fit score per posting, and a note that the
   planted line is only text in the mail), and buttons from a fixed list.
-- **[Gander](./horizons-demo.html)** — a timeline and what-if sandbox over the
+- **[Timeline planner](./horizons-demo.html)** — a timeline and what-if sandbox over the
   same state layer. Schedules are derived (dependency order, effort estimates
   and, once calibrated, the estimate error factor, backward-packed from
   deadlines) where no explicit dates exist; drag any bar and everything
@@ -61,7 +61,7 @@ Live via GitHub Pages. Trace is the shortest way in; each page stands alone.
   stay pinned.
   "Copy scenario" exports a proposal for the validating CLI to apply later;
   playing with the plan can never mutate canonical state, and the page shows
-  the Docket card that proposal would become. The critical path (the longest
+  the decision-log card that proposal would become. The critical path (the longest
   chain of unfinished items by hours left, at two focus hours a day) is drawn
   in gold, next to a slack table sorted least slack first. An item's hours
   left are its estimate less the share already done; work with no estimate
@@ -118,14 +118,20 @@ Built with Claude Code, hardened iteratively, and in daily use.
 
 ## Refresh log
 
-- **2026-10-25** — Trace redrawn as a map in its own look (blue and pink
-  ink on off-white): big bubbles for the email's path, small ones for the
-  rest of the day, a short card and its gate on tap. The step-by-step page
-  stays as [trace-long](./trace-long.html), linked both ways. The Gazette
-  demo takes the live paper's newsprint restyle of 2026-10-22: sepia paper,
-  Didot nameplate, small caps; the linked Docket sits on the same paper.
-- **2026-10-23** — Gander's sandbox carries a drag downstream. Before, a drag
-  in a project packed back from its due date moved only the dragged bar, and a
+- **2026-10-27** — plain names on every page and in this README: project
+  tracker, daily briefing, timeline planner, decision log, agent trace.
+  Earlier versions used internal names (Flightpath, The Gazette, Gander);
+  the file names are unchanged, so existing links keep working.
+- **2026-10-25** — the agent trace redrawn as a map in its own look (blue
+  and pink ink on off-white): big bubbles for the email's path, small ones
+  for the rest of the day, a short card and its gate on tap. The
+  step-by-step page stays as [trace-long](./trace-long.html), linked both
+  ways. The daily briefing demo takes the live paper's newsprint restyle of
+  2026-10-22: sepia paper, Didot nameplate, small caps; the linked decision
+  log sits on the same paper.
+- **2026-10-23** — the timeline planner's sandbox carries a drag downstream.
+  Before, a drag in a project packed back from its due date moved only the
+  dragged bar, and a
   cross-project wait never moved at all; now everything waiting on the bar
   follows once its slack runs out, across projects; dates set by hand stay
   put. A bar that is in progress or already late moves by exactly the drag
@@ -133,26 +139,28 @@ Built with Claude Code, hardened iteratively, and in daily use.
   page's starting view is unchanged. The landing page now opens
   with the planted job-alert line, names what the pages show in the field's
   terms, and lists the system's limits.
-- **2026-10-18** — Trace brought in line with the new Gazette: the edition
-  line, the flag card's layout and buttons, the Docket counts in the brief,
-  and a silent feed in the patrol strip. Gander's scenario sheet names a
-  project with no milestones as "(whole project)". Gander is rebuilt on the
-  current dependency renderer, which counts a cross-project wait (since
+- **2026-10-18** — the agent trace brought in line with the new daily
+  briefing: the edition line, the flag card's layout and buttons, the
+  decision-log counts in the brief, and a silent feed in the patrol strip.
+  The timeline planner's scenario sheet names a project with no milestones
+  as "(whole project)". The timeline planner is rebuilt on the current
+  dependency renderer, which counts a cross-project wait (since
   2026-10-12) and weighs each item by its hours left (since 2026-10-18,
   engine PR 311). The residency application waits 28 h on the EP's master
   and now shows +77 d; the note warning that +91 d left the wait out is
   gone. Rows with work under way gain slack, the concert's most (+9 d to
   +18 d).
-- **2026-10-08** — the Gazette and Gander moved to the 2026-10-02 snapshot.
-  The Gazette's linked Docket page shows a quarantined forward. Gander now
-  draws the critical path, with slack, and previews the Docket card a dragged
-  scenario would file.
-- **2026-10-02** — Trace added. Flightpath fixture re-dated to a 2026-10-02
-  snapshot, with the stale strip, due types and the calibration line. Landing
+- **2026-10-08** — the daily briefing and the timeline planner moved to the
+  2026-10-02 snapshot. The daily briefing's linked decision-log page shows a
+  quarantined forward. The timeline planner now draws the critical path,
+  with slack, and previews the decision-log card a dragged scenario would
+  file.
+- **2026-10-02** — agent trace added. Project tracker fixture re-dated to a
+  2026-10-02 snapshot, with the stale strip, due types and the calibration line. Landing
   page names each page's mechanism and carries the provenance and tier notes.
-- **2026-09-17** — reader-visible rename (Atlas → Flightpath, Horizons →
-  Gander), landing page restyled to match the demos, a dead header link fixed.
+- **2026-09-17** — reader-visible rename of the board and timeline pages,
+  landing page restyled to match the demos, a dead header link fixed.
 - **2026-08-17** — richer synthetic data: heat, rank, estimate ledgers, a
-  Docket digest.
+  decision-log digest.
 
 License: MIT
